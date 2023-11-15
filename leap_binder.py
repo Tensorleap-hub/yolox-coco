@@ -77,6 +77,10 @@ def get_bbs(idx: int, data: PreprocessResponse) -> np.ndarray:
     return bboxes
 
 
+def get_dummy_gt(idx: int, data: PreprocessResponse) -> np.ndarray:
+    return np.array([0])
+
+
 # ----------------------------------------------------------metadata----------------------------------------------------
 def get_fname(index: int, subset: PreprocessResponse) -> str:
     data = subset.data
@@ -167,6 +171,12 @@ def get_original_height(index: int, subset: PreprocessResponse) -> int:
 #
 #     return metadatas
 
+def placeholder_loss(gt: tf.Tensor, y_pred_1: tf.Tensor, y_pred_2: tf.Tensor) -> tf.Tensor:  # return batch
+    """
+    Sums the classification and regression loss
+    """
+    return tf.reduce_mean(y_pred_1, axis=-1) * 0
+
 
 # ---------------------------------------------------------binding------------------------------------------------------
 # preprocess function
@@ -183,7 +193,7 @@ leap_binder.add_prediction('object detection',
                            [f"mask_coeff_{i}" for i in range(32)])
 
 # set custom loss
-# leap_binder.add_custom_loss(od_loss, 'od_loss')
+leap_binder.add_custom_loss(placeholder_loss, 'zero_loss')
 # # set visualizers
 # leap_binder.set_visualizer(gt_bb_decoder, 'bb_gt_decoder', LeapDataType.ImageWithBBox)
 # leap_binder.set_visualizer(bb_decoder, 'bb_decoder', LeapDataType.ImageWithBBox)
