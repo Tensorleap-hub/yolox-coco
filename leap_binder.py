@@ -5,14 +5,16 @@ import tensorflow as tf
 from PIL import Image
 
 from code_loader import leap_binder
-from code_loader.contract.enums import LeapDataType
 
 from code_loader.contract.datasetclasses import PreprocessResponse
+from code_loader.contract.enums import LeapDataType
 from pycocotools.coco import COCO
 
-from src.config import CONFIG, dataset_path
-from src.data.preprocessing import load_set, preprocess_image
-from src.utils.general_utils import extract_and_cache_bboxes
+from yolonas.config import dataset_path, CONFIG
+from yolonas.data.preprocessing import load_set, preprocess_image
+from yolonas.metrics import custom_yolo_nas_loss
+from yolonas.utils.general_utils import extract_and_cache_bboxes
+from yolonas.visualizers import pred_bb_decoder, gt_bb_decoder
 
 
 # ----------------------------------------------------data processing--------------------------------------------------
@@ -57,9 +59,9 @@ def input_image(idx: int, data: PreprocessResponse) -> np.ndarray:
     data = data.data
     x = data['samples'][idx]
     path = os.path.join(dataset_path, f"images/{x['file_name']}")
-    image = Image.open(path)
     # rescale
-    image = preprocess_image(image)
+    image = np.array(
+        Image.open(path).resize((CONFIG['IMAGE_SIZE'][0], CONFIG['IMAGE_SIZE'][1]), Image.BILINEAR)) / 255.
     return image
 
 
@@ -193,12 +195,13 @@ leap_binder.add_prediction('object detection',
 
 # set custom loss
 leap_binder.add_custom_loss(placeholder_loss, 'zero_loss')
+leap_binder.add_custom_loss(custom_yolo_nas_loss, 'custom_yolo_nas_loss')
 # # set visualizers
-# leap_binder.set_visualizer(gt_bb_decoder, 'bb_gt_decoder', LeapDataType.ImageWithBBox)
-# leap_binder.set_visualizer(bb_decoder, 'bb_decoder', LeapDataType.ImageWithBBox)
+leap_binder.set_visualizer(gt_bb_decoder, 'bb_gt_decoder', LeapDataType.ImageWithBBox)
+leap_binder.set_visualizer(pred_bb_decoder, 'pred_bb_decoder', LeapDataType.ImageWithBBox)
 #
 # # set custom metrics
-# leap_binder.add_custom_metric(general_metrics_dict, 'general_metrics')
+leap_binder.add_custom_metric(custom_yolo_nas_loss, 'huber')
 #
 # # set metadata
 # leap_binder.set_metadata(metadata_dict, name='metadata')

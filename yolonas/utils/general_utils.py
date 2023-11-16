@@ -8,23 +8,17 @@ from code_loader.helpers.detection.utils import xyxy_to_xywh_format, xywh_to_xyx
 from code_loader.helpers.detection.yolo.utils import reshape_output_list
 from numpy._typing import NDArray
 from yolonas.config import CONFIG
-from yolonas.yolo_helpers.yolo_utils import DECODER
+from yolonas.utils.yolo_utils import decoder
 
 
-def get_predict_bbox_list(data: tf.Tensor) -> List[BoundingBox]:
+def get_predict_bbox_list(reg_fixed: tf.Tensor, cls: tf.Tensor) -> List[BoundingBox]:
     """
     Description: This function takes a TensorFlow tensor data as input and returns a list of bounding boxes representing predicted annotations.
     Input: data (tf.Tensor): A TensorFlow tensor representing the output data.
     Output: bb_object (List[BoundingBox]): A list of bounding box objects representing the predicted annotations.
     """
-    from_logits = True if CONFIG['MODEL_FORMAT'] != "inference" else False
-    decoded = False if CONFIG['MODEL_FORMAT'] != "inference" else True
-    class_list_reshaped, loc_list_reshaped = reshape_output_list(
-        np.reshape(data, (1, *data.shape)), decoded=decoded, image_size=CONFIG['IMAGE_SIZE'])
-    # add batch
-    #TODO
-    outputs = DECODER(loc_data=[reg_fixed], conf_data=[cls], prior_data=[None],
-              from_logits=False, decoded=True)
+    outputs = decoder(loc_data=[np.expand_dims(reg_fixed, 0)], conf_data=[np.expand_dims(cls, 0)], prior_data=[None],
+                      from_logits=False, decoded=True)
     bb_object = bb_array_to_object(outputs[0], iscornercoded=True, bg_label=CONFIG['BACKGROUND_LABEL'])
     return bb_object
 
@@ -44,14 +38,14 @@ def bb_array_to_object(bb_array: Union[NDArray[float], tf.Tensor], iscornercoded
     for i in range(bb_array.shape[0]):
         if bb_array[i][-1] != bg_label:
             if iscornercoded:
-                x, y, w, h = xyxy_to_xywh_format(bb_array[i][1:5])
+                x, y, w, h = bb_array[i][1:5]
                 # unormalize to image dimensions
             else:
                 x, y = bb_array[i][0], bb_array[i][1]
                 w, h = bb_array[i][2], bb_array[i][3]
             conf = 1 if is_gt else bb_array[i][0]
             curr_bb = BoundingBox(x=x, y=y, width=w, height=h, confidence=conf,
-                                  label=CONFIG['CATEGORIES'][int(bb_array[i][min(5, len(bb_array[i]) - 1)])])
+                                  label=str(bb_array[i][min(5, len(bb_array[i]) - 1)])) #FIXME add categories
 
             bb_list.append(curr_bb)
     return bb_list
@@ -104,7 +98,7 @@ def calculate_iou_all_pairs(bboxes: np.ndarray, image_size: int) -> np.ndarray:
     """
 
     # Reformat all bboxes to (x_min, y_min, x_max, y_max)
-    bboxes = np.asarray([xywh_to_xyxy_format(bbox[:-1]) for bbox in bboxes]) * image_size
+    bboxes = np.asarray([bbox[:-1] for bbox in bboxes]) * image_size
     num_bboxes = len(bboxes)
     # Calculate coordinates for all pairs
     x_min = np.maximum(bboxes[:, 0][:, np.newaxis], bboxes[:, 0])
@@ -189,21 +183,21 @@ def calculate_overlap(box1, box2):
     return overlap_area
 
 
-def extract_bboxes_yolo(path: str):
+def extract_and_cache_bboxes(idx: int, data: Dict):
+    x = data['samples'][idx]
+    coco = data['cocofile']
+    ann_ids = coco.getAnnIds(imgIds=x['id'])
+    anns = coco.loadAnns(ann_ids)
     bboxes = np.zeros([CONFIG['MAX_BB_PER_IMAGE'], 5])
-    # Load bounding box annotations from the YOLO format
-    # You'll need to parse the YOLO annotation file to get bounding boxes and class IDs
-    # Assuming YOLO annotation format as: "<class_id> <center_x> <center_y> <width> <height>"
-    with open(path, 'r') as file:
-        lines = file.readlines()
-
-    max_anns = min(CONFIG['MAX_BB_PER_IMAGE'], len(lines))
-    for i, line in enumerate(lines):
-        line = line.strip().split()
-        class_id = int(line[0])
-        bbox = list(map(float, line[1:]))
-        bboxes[i, :4] = bbox
-        bboxes[i, 4] = class_id
-
+    max_anns = min(CONFIG['MAX_BB_PER_IMAGE'], len(anns))
+    for i in range(max_anns):
+        ann = anns[i]
+        if isinstance(ann['bbox'], list) and ann['category_id'] <= CONFIG['CLASSES']:
+            img_size = (x['height'], x['width'])
+            class_id = ann['category_id']
+            bbox = np.expand_dims(ann['bbox'], 0)[0].astype(np.float32)
+            bbox /= np.array((img_size[1], img_size[0], img_size[1], img_size[0])).astype(np.float32)
+            bboxes[i, :4] = bbox
+            bboxes[i, 4] = class_id
     bboxes[max_anns:, 4] = CONFIG['BACKGROUND_LABEL']
     return bboxes

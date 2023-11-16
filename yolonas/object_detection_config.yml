@@ -1,40 +1,14 @@
-dataset_path: /home/tensorleap/tensorleap/data/coco-dataset/coco # this foldr is expected to contain a json file for each subset and an `images` dir
+dataset_path: /Users/ranhomri/tensorleap/data/coco-2017 # this foldr is expected to contain a json file for each subset and an `images` dir
 
 BATCH_SIZE: 4
-TRAIN_SIZE: 16
-VAL_SIZE: 16
-TEST_SIZE: 16
+TRAIN_SIZE: 8
+VAL_SIZE: 8
+TEST_SIZE: 8
 
 BACKGROUND_LABEL: 81
 
 CLASSES: 80
 CONF_THRESH: 0.35
-FEATURE_MAPS:
-- - 80
-  - 80
-- - 40
-  - 40
-- - 20
-  - 20
-BOX_SIZES:
-- - - 10
-    - 13
-  - - 16
-    - 30
-  - - 33
-    - 23
-- - - 30
-    - 61
-  - - 62
-    - 45
-  - - 59
-    - 119
-- - - 116
-    - 90
-  - - 156
-    - 198
-  - - 373
-    - 326
 IMAGE_SIZE: [640, 640]
 SCALE_TO_SIZE: 636
 LOAD_UNION_CATEGORIES_IMAGES: true

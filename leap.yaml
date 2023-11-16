@@ -1,4 +1,4 @@
-codeIntegrationId: 6554e7f621744700197e5923
+codeIntegrationId: 6555ed3b90a9f80019f449f7
 projectId: 6554e7f321744700197e591f
 secretId: ""
 entryFile: leap_binder.py
@@ -6,14 +6,15 @@ include:
     - leap_binder.py
     - leap_test.py
     - leap_custom_test.py
-    - src/config.py
-    - src/metrics.py
-    - src/object_detection_config.yml
-    - src/utils/dataclasses.py
-    - src/utils/gcs_utils.py
-    - src/utils/general_utils.py
-    - src/data/posprocessing.py
-    - src/data/preprocessing.py
-    - src/data/__init__.py
-    - src/utils/__init__.py
-    
+    - yolonas/config.py
+    - yolonas/metrics.py
+    - yolonas/visualizers.py
+    - yolonas/object_detection_config.yml
+    - yolonas/utils/dataclasses.py
+    - yolonas/utils/decoder.py
+    - yolonas/utils/gcs_utils.py
+    - yolonas/utils/yolo_utils.py
+    - yolonas/utils/general_utils.py
+    - yolonas/data/posprocessing.py
+    - yolonas/data/preprocessing.py
+
