@@ -11,6 +11,9 @@ decorators:
           operation: Permute
           name: permute_213
           id: '171'
+        - inputKey: data
+          operation: Visualizer
+          id: '556'
   - operation: CustomLoss
     data:
       arg_names:
@@ -46,6 +49,8 @@ decorators:
       type: Optimizer
       custom_input_keys:
         - 550-0
+      arg_names:
+        - '0'
     id: '550'
     inputs:
       '0':
@@ -62,15 +67,15 @@ decorators:
     inputs: {}
     outputs:
       bbs:
+        - inputKey: gt
+          operation: CustomLoss
+          id: '549'
         - inputKey: bb_gt
           operation: Visualizer
           id: '552'
         - inputKey: y_true
           operation: Metric
           id: '555'
-        - inputKey: gt
-          operation: CustomLoss
-          id: '549'
   - operation: Visualizer
     data:
       type: Visualizer
@@ -131,10 +136,10 @@ decorators:
       images:
         - inputKey: image
           operation: Visualizer
-          id: '553'
+          id: '552'
         - inputKey: image
           operation: Visualizer
-          id: '552'
+          id: '553'
   - operation: Metric
     data:
       type: Metric
@@ -161,6 +166,22 @@ decorators:
         - outputKey: bbs
           operation: GroundTruth
           id: '551'
+    outputs: {}
+  - operation: Visualizer
+    data:
+      type: Visualizer
+      name: Image
+      visualizer_name: Image
+      visualizer_type: Image
+      arg_names:
+        - data
+      user_unique_name: Image
+    id: '556'
+    inputs:
+      data:
+        - outputKey: images
+          operation: Input
+          id: '172'
     outputs: {}
 layers:
   - operation: Permute
