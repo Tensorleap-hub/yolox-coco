@@ -5,10 +5,11 @@ from PIL import Image
 
 from code_loader.helpers.detection.utils import xyxy_to_xywh_format
 
+from yolonas.config import CONFIG
 from yolonas.utils.decoder import Decoder
 
-decoder = Decoder(num_classes=80,
-                  background_label=81,
+decoder = Decoder(num_classes=CONFIG['CLASSES'],
+                  background_label=CONFIG['BACKGROUND_LABEL'],
                   top_k=300,
                   conf_thresh=0.25,
                   nms_thresh=0.7,
@@ -19,6 +20,3 @@ decoder = Decoder(num_classes=80,
                   has_object_logit=False)
 
 
-# def y_pred_from_model_outputs(reg: tf.Tensor, cls: tf.Tensor):
-#
-#     return y_pred
