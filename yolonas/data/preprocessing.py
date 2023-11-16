@@ -22,7 +22,7 @@ def load_set(coco, local_filepath, load_union=False):
         imgIds = list(imgIds)
     imgs = coco.loadImgs(imgIds)
 
-    image_list = [img for img in os.listdir(os.path.join(local_filepath, 'images')) if img.endswith('.jpg')]
+    image_list = [img for img in os.listdir(os.path.join(local_filepath, 'images')) if img.endswith('.jpeg')]
     imgs = [img for img in imgs if img['file_name'] in image_list]
     return imgs
 
