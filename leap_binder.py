@@ -188,9 +188,8 @@ leap_binder.set_input(input_image, 'images')
 leap_binder.set_ground_truth(get_bbs, 'bbs')
 # set prediction (object)
 leap_binder.add_prediction('object detection',
-                           ["x", "y", "w", "h", "obj"] +
-                           [f"class_{i}" for i in range(CONFIG['CLASSES'])] +
-                           [f"mask_coeff_{i}" for i in range(32)])
+                           ["x", "y", "x", "y"] +
+                           [f"class_{i}" for i in range(CONFIG['CLASSES'])])
 
 # set custom loss
 leap_binder.add_custom_loss(placeholder_loss, 'zero_loss')

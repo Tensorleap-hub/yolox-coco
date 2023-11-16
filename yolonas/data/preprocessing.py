@@ -4,8 +4,8 @@ from typing import Union, Tuple
 import numpy as np
 from PIL import Image, ImageOps
 
-from src.config import CONFIG
-from src.utils.dataclasses import RescaleMetadata, PaddingCoordinates
+from yolonas.config import CONFIG
+from yolonas.utils.dataclasses import RescaleMetadata, PaddingCoordinates
 
 
 def load_set(coco, local_filepath, load_union=False):

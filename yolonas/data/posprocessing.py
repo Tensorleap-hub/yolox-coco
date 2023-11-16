@@ -2,7 +2,7 @@ from typing import Tuple
 
 import numpy as np
 
-from src.utils.dataclasses import RescaleMetadata, PaddingCoordinates
+from yolonas.utils.dataclasses import RescaleMetadata, PaddingCoordinates
 
 
 def xyxy2cxcywh(bboxes):

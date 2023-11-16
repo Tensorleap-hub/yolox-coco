@@ -1,8 +1,19 @@
-codeIntegrationId: 655496fab85b2c0012dbd34a
-projectId: 65549639b85b2c0012dbd332
-secretId: 
-entryFile: 'leap_binder.py'
+codeIntegrationId: 6554e7f621744700197e5923
+projectId: 6554e7f321744700197e591f
+secretId: ""
+entryFile: leap_binder.py
 include:
-  - leap_binder.py
-  - leap_test.py
-  - leap_custom_test.py
+    - leap_binder.py
+    - leap_test.py
+    - leap_custom_test.py
+    - src/config.py
+    - src/metrics.py
+    - src/object_detection_config.yml
+    - src/utils/dataclasses.py
+    - src/utils/gcs_utils.py
+    - src/utils/general_utils.py
+    - src/data/posprocessing.py
+    - src/data/preprocessing.py
+    - src/data/__init__.py
+    - src/utils/__init__.py
+    
