@@ -1,4 +1,5 @@
 import tensorflow as tf
+import numpy as np
 from code_loader.helpers.detection.utils import xyxy_to_xywh_format
 
 from yolonas.utils.yolo_utils import decoder
@@ -24,12 +25,12 @@ def custom_yolo_nas_loss(y_true, reg: tf.Tensor, cls: tf.Tensor):
     true_class_probs = y_true[:, :, 4:]
 
     # Calculate IoU for each pair of predicted and true bounding boxes
-    pred_boxes = tf.expand_dims(pred_boxes, axis=2)  # Shape: (batch_size, n_pred_boxes, 1, 4)
-    true_boxes = tf.expand_dims(true_boxes, axis=1)  # Shape: (batch_size, 1, n_true_boxes, 4)
+    pred_boxes = tf.cast(tf.expand_dims(pred_boxes, axis=2), tf.float32) # Shape: (batch_size, n_pred_boxes, 1, 4)
+    true_boxes = tf.cast(tf.expand_dims(true_boxes, axis=1), tf.float32)  # Shape: (batch_size, 1, n_true_boxes, 4)
 
-    mask = tf.cast(y_true[:, :, 4] != 81, tf.float64)
+    mask = tf.cast(y_true[:, :, 4] != 81, tf.float32)
     mask_expanded = tf.expand_dims(mask, axis=-1)
 
     regression_loss = tf.keras.losses.Huber()(true_boxes * mask_expanded, pred_boxes * mask_expanded)
 
-    return regression_loss.numpy()
+    return [regression_loss.numpy().astype(np.float32)]

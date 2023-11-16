@@ -1,0 +1,175 @@
+decorators:
+  - operation: Input
+    data:
+      type: Input
+      output_name: images
+    id: '172'
+    inputs: {}
+    outputs:
+      images:
+        - inputKey: input
+          operation: Permute
+          name: permute_213
+          id: '171'
+  - operation: CustomLoss
+    data:
+      arg_names:
+        - gt
+        - y_pred_1
+        - y_pred_2
+      name: zero_loss
+      selected: zero_loss
+      type: CustomLoss
+    id: '549'
+    inputs:
+      y_pred_1:
+        - outputKey: feature_map
+          operation: Permute
+          name: permute_214
+          id: '1'
+      y_pred_2:
+        - outputKey: feature_map
+          operation: Permute
+          name: permute_215
+          id: '518'
+      gt:
+        - outputKey: bbs
+          operation: GroundTruth
+          id: '551'
+    outputs:
+      loss:
+        - inputKey: '0'
+          operation: Adam
+          id: '550'
+  - operation: Adam
+    data:
+      type: Optimizer
+      custom_input_keys:
+        - 550-0
+    id: '550'
+    inputs:
+      '0':
+        - outputKey: loss
+          operation: CustomLoss
+          id: '549'
+    outputs: {}
+  - operation: GroundTruth
+    data:
+      type: GroundTruth
+      output_name: bbs
+      selected: bbs
+    id: '551'
+    inputs: {}
+    outputs:
+      bbs:
+        - inputKey: bb_gt
+          operation: Visualizer
+          id: '552'
+        - inputKey: y_true
+          operation: Metric
+          id: '555'
+        - inputKey: gt
+          operation: CustomLoss
+          id: '549'
+  - operation: Visualizer
+    data:
+      type: Visualizer
+      name: bb_gt_decoder
+      visualizer_name: bb_gt_decoder
+      visualizer_type: ImageWithBBox
+      arg_names:
+        - image
+        - bb_gt
+      user_unique_name: bb_gt_decoder
+    id: '552'
+    inputs:
+      bb_gt:
+        - outputKey: bbs
+          operation: GroundTruth
+          id: '551'
+      image:
+        - outputKey: images
+          operation: Input
+          id: '554'
+    outputs: {}
+  - operation: Visualizer
+    data:
+      type: Visualizer
+      name: pred_bb_decoder
+      visualizer_name: pred_bb_decoder
+      visualizer_type: ImageWithBBox
+      arg_names:
+        - image
+        - reg
+        - cls
+      user_unique_name: pred_bb_decoder
+    id: '553'
+    inputs:
+      reg:
+        - outputKey: feature_map
+          operation: Permute
+          name: permute_214
+          id: '1'
+      cls:
+        - outputKey: feature_map
+          operation: Permute
+          name: permute_215
+          id: '518'
+      image:
+        - outputKey: images
+          operation: Input
+          id: '554'
+    outputs: {}
+  - operation: Input
+    data:
+      type: Input
+      output_name: images
+      selected: images
+    id: '554'
+    inputs: {}
+    outputs:
+      images:
+        - inputKey: image
+          operation: Visualizer
+          id: '553'
+        - inputKey: image
+          operation: Visualizer
+          id: '552'
+  - operation: Metric
+    data:
+      type: Metric
+      name: huber
+      metric_name: huber
+      arg_names:
+        - y_true
+        - reg
+        - cls
+      user_unique_name: huber
+    id: '555'
+    inputs:
+      reg:
+        - outputKey: feature_map
+          operation: Permute
+          name: permute_214
+          id: '1'
+      cls:
+        - outputKey: feature_map
+          operation: Permute
+          name: permute_215
+          id: '518'
+      y_true:
+        - outputKey: bbs
+          operation: GroundTruth
+          id: '551'
+    outputs: {}
+layers:
+  - operation: Permute
+    data:
+      prediction_type: object detection
+    name: permute_214
+    id: '1'
+  - operation: Permute
+    data:
+      prediction_type: object detection
+    name: permute_215
+    id: '518'
