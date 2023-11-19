@@ -1,4 +1,4 @@
-from yolonas.utils.yolo_utils import xyxy_to_xywh_format
+from code_loader.helpers.detection.utils import xyxy_to_xywh_format
 from code_loader.helpers.detection.yolo.utils import jaccard, xywh_to_xyxy_format
 from yolonas.utils.yolo_utils import decoder
 from code_loader.contract.datasetclasses import ConfusionMatrixElement
