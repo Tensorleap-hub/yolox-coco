@@ -7,7 +7,7 @@ class MockOneClass(tf.keras.layers.Layer):
         super(MockOneClass, self).__init__(**kwargs)
 
     def call(self, inputs, **kwargs):
-        return tf.expand_dims(tf.reduce_max(inputs, 1), 0)
+        return tf.reduce_max(inputs, axis=1, keepdims=True)
 
     def compute_output_shape(self, input_shape):
         return TensorShape(1, 1, 8400)

@@ -4,7 +4,6 @@ version = "0.1.0"
 description = ""
 authors = ["ranhomri <ran.homri@tensorleap.ai>"]
 readme = "README.md"
-packages = [{include = "yolo_nas_coco"}]
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.11"

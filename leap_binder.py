@@ -16,6 +16,7 @@ from yolonas.data.preprocessing import load_set, preprocess_image
 from yolonas.metrics import custom_yolo_nas_loss, placeholder_loss, huber_metric
 from yolonas.utils.general_utils import extract_and_cache_bboxes
 from yolonas.visualizers import pred_bb_decoder, gt_bb_decoder
+from yolonas.utils.confusion_matrix import confusion_matrix_metric
 
 
 # ----------------------------------------------------data processing--------------------------------------------------
@@ -172,8 +173,6 @@ def get_original_height(index: int, subset: PreprocessResponse) -> int:
 #     }
 #
 #     return metadatas
-
-
 # ---------------------------------------------------------binding------------------------------------------------------
 # preprocess function
 leap_binder.set_preprocess(subset_images)
@@ -186,13 +185,13 @@ leap_binder.set_ground_truth(get_bbs, 'bbs')
 leap_binder.add_prediction('object detection',
                            ["x", "y", "x", "y"] +
                            [f"class_{i}" for i in range(CONFIG['CLASSES'])])
-
 # set custom loss
 leap_binder.add_custom_loss(placeholder_loss, 'zero_loss')
 leap_binder.add_custom_loss(custom_yolo_nas_loss, 'custom_yolo_nas_loss')
 # # set visualizers
 leap_binder.set_visualizer(gt_bb_decoder, 'bb_gt_decoder', LeapDataType.ImageWithBBox)
 leap_binder.set_visualizer(pred_bb_decoder, 'pred_bb_decoder', LeapDataType.ImageWithBBox)
+leap_binder.add_custom_metric(confusion_matrix_metric, "Confusion metric")
 
 # # set custom metrics
 leap_binder.add_custom_metric(huber_metric, 'huber')
