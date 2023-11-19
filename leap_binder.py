@@ -1,7 +1,6 @@
 import os
-from typing import Union, List, Dict
+from typing import List
 import numpy as np
-import tensorflow as tf
 from PIL import Image
 
 from code_loader import leap_binder

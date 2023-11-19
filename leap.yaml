@@ -16,6 +16,7 @@ include:
     - yolonas/utils/gcs_utils.py
     - yolonas/utils/yolo_utils.py
     - yolonas/utils/general_utils.py
+    - yolonas/utils/confusion_matrix.py
     - yolonas/data/posprocessing.py
     - yolonas/data/preprocessing.py
 
