@@ -9,6 +9,7 @@ include:
     - yolonas/config.py
     - yolonas/metrics.py
     - yolonas/visualizers.py
+    - yolonas/custom_layers.py
     - yolonas/object_detection_config.yml
     - yolonas/utils/dataclasses.py
     - yolonas/utils/decoder.py

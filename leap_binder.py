@@ -11,8 +11,9 @@ from code_loader.contract.enums import LeapDataType
 from pycocotools.coco import COCO
 
 from yolonas.config import dataset_path, CONFIG
+from yolonas.custom_layers import MockOneClass
 from yolonas.data.preprocessing import load_set, preprocess_image
-from yolonas.metrics import custom_yolo_nas_loss
+from yolonas.metrics import custom_yolo_nas_loss, placeholder_loss, huber_metric
 from yolonas.utils.general_utils import extract_and_cache_bboxes
 from yolonas.visualizers import pred_bb_decoder, gt_bb_decoder
 
@@ -52,17 +53,21 @@ def subset_images() -> List[PreprocessResponse]:
     return [training_subset, validation_subset, test_subset]
 
 
-def input_image(idx: int, data: PreprocessResponse) -> np.ndarray:
+def input_image(idx: int, data: PreprocessResponse, get_scaling_metadata: bool = False) -> np.ndarray:
     """
     Returns a BGR image normalized and padded
     """
     data = data.data
     x = data['samples'][idx]
     path = os.path.join(dataset_path, f"images/{x['file_name']}")
+    image = Image.open(path)
     # rescale
-    image = np.array(
-        Image.open(path).resize((CONFIG['IMAGE_SIZE'][0], CONFIG['IMAGE_SIZE'][1]), Image.BILINEAR)) / 255.
-    return image
+    image = image.resize((CONFIG['IMAGE_SIZE'][0], CONFIG['IMAGE_SIZE'][1]), Image.BILINEAR)
+    return np.asarray(image) / 255.
+    # if get_scaling_metadatata:
+    #     return preprocess_image(image, get_metadata=True)
+    # else:
+    #     return preprocess_image(Image.open(path))
 
 
 def get_annotation_coco(idx: int, data: PreprocessResponse) -> np.ndarray:
@@ -173,12 +178,6 @@ def get_original_height(index: int, subset: PreprocessResponse) -> int:
 #
 #     return metadatas
 
-def placeholder_loss(gt: tf.Tensor, y_pred_1: tf.Tensor, y_pred_2: tf.Tensor) -> tf.Tensor:  # return batch
-    """
-    Sums the classification and regression loss
-    """
-    return tf.reduce_mean(y_pred_1, axis=-1) * 0
-
 
 # ---------------------------------------------------------binding------------------------------------------------------
 # preprocess function
@@ -199,10 +198,11 @@ leap_binder.add_custom_loss(custom_yolo_nas_loss, 'custom_yolo_nas_loss')
 # # set visualizers
 leap_binder.set_visualizer(gt_bb_decoder, 'bb_gt_decoder', LeapDataType.ImageWithBBox)
 leap_binder.set_visualizer(pred_bb_decoder, 'pred_bb_decoder', LeapDataType.ImageWithBBox)
-#
+
 # # set custom metrics
-leap_binder.add_custom_metric(custom_yolo_nas_loss, 'huber')
+leap_binder.add_custom_metric(huber_metric, 'huber')
 #
+leap_binder.set_custom_layer(MockOneClass, 'reduce_to_one_class')
 # # set metadata
 # leap_binder.set_metadata(metadata_dict, name='metadata')
 

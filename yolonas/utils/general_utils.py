@@ -6,6 +6,8 @@ import tensorflow as tf
 from code_loader.contract.responsedataclasses import BoundingBox
 from code_loader.helpers.detection.utils import xyxy_to_xywh_format, xywh_to_xyxy_format
 from code_loader.helpers.detection.yolo.utils import reshape_output_list
+from matplotlib import patches
+import matplotlib.pyplot as plt
 from numpy._typing import NDArray
 from yolonas.config import CONFIG
 from yolonas.utils.yolo_utils import decoder
@@ -192,12 +194,49 @@ def extract_and_cache_bboxes(idx: int, data: Dict):
     max_anns = min(CONFIG['MAX_BB_PER_IMAGE'], len(anns))
     for i in range(max_anns):
         ann = anns[i]
-        if isinstance(ann['bbox'], list) and ann['category_id'] <= CONFIG['CLASSES']:
+        if isinstance(ann['bbox'], list):
             img_size = (x['height'], x['width'])
             class_id = ann['category_id']
             bbox = np.expand_dims(ann['bbox'], 0)[0].astype(np.float32)
             bbox /= np.array((img_size[1], img_size[0], img_size[1], img_size[0])).astype(np.float32)
             bboxes[i, :4] = bbox
-            bboxes[i, 4] = class_id
+            bboxes[i, 4] = 0
     bboxes[max_anns:, 4] = CONFIG['BACKGROUND_LABEL']
     return bboxes
+
+
+def draw_image_with_boxes(image, bounding_boxes):
+    # Create figure and axes
+    fig, ax = plt.subplots(1)
+
+    # Display the image
+    ax.imshow(image)
+
+    # Draw bounding boxes on the image
+    for bbox in bounding_boxes:
+        x, y, width, height = bbox.x, bbox.y, bbox.width, bbox.height
+        confidence, label = bbox.confidence, bbox.label
+
+        # Convert relative coordinates to absolute coordinates
+        abs_x = x * image.shape[1]
+        abs_y = y * image.shape[0]
+        abs_width = width * image.shape[1]
+        abs_height = height * image.shape[0]
+
+        # Create a rectangle patch
+        rect = patches.Rectangle(
+            (abs_x - abs_width / 2, abs_y - abs_height / 2),
+            abs_width, abs_height,
+            linewidth=2, edgecolor='r', facecolor='none'
+        )
+
+        # Add the rectangle to the axes
+        ax.add_patch(rect)
+
+        # Display label and confidence
+        ax.text(abs_x - abs_width / 2, abs_y - abs_height / 2 - 5,
+                f"{label} {confidence:.2f}", color='r', fontsize=8,
+                bbox=dict(facecolor='white', alpha=0.7, edgecolor='none', boxstyle='round,pad=0.3'))
+
+    # Show the image with bounding boxes
+    plt.show()

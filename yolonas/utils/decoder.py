@@ -87,9 +87,6 @@ class Decoder:
                     topk_indices = np.take(non_zero_indices, best_indices)
                     selected_loc = tf.gather(l_loc, topk_indices, 1).numpy()
                     selected_scores = best_scores
-                    if self.semantic_instance:
-                        selected_mask_indices = tf.gather(conf_data[m][0, :, self.num_classes + 1:],
-                                                          topk_indices, 1).numpy()
                     if not decoded:
                         selected_prior = tf.gather(l_prior, topk_indices, 1).numpy()
                         selected_decoded = decode_bboxes(selected_loc,
@@ -101,10 +98,6 @@ class Decoder:
                         if not self.semantic_instance:
                             class_selections[selected_classes[k]].append(
                                 (selected_scores[k], *selected_decoded[k, :], selected_classes[k]))
-                        else:
-                            class_selections[selected_classes[k]].append(
-                                (selected_scores[k], *selected_decoded[k, :], selected_classes[k],
-                                 *selected_mask_indices[k, :]))
             final_preds = []
             if not self.class_agnostic_nms:
                 for j in range(classes_num):
@@ -140,8 +133,11 @@ class Decoder:
                 for j in range(len(class_selections)):
                     all_selection += class_selections[j]
                 np_all_selected: NDArray[np.float32] = np.array(all_selection)
-                selected_indices = self.nms(np_all_selected)
-                outputs.append(np_all_selected[selected_indices, :])
+                if len(np_all_selected) == 0:
+                    outputs.append(np.empty(0, dtype=float))
+                else:
+                    selected_indices = self.nms(np_all_selected)
+                    outputs.append(np_all_selected[selected_indices, :])
         return outputs
 
     def nms(self, np_selection: NDArray[np.float32]) -> tf.Tensor:
