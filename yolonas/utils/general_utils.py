@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from numpy._typing import NDArray
 from yolonas.config import CONFIG
 from yolonas.utils.yolo_utils import decoder
-
+from code_loader.helpers.detection.utils import xyxy_to_xywh_format
 
 def get_predict_bbox_list(reg_fixed: tf.Tensor, cls: tf.Tensor) -> List[BoundingBox]:
     """
@@ -37,7 +37,7 @@ def bb_array_to_object(bb_array: Union[NDArray[float], tf.Tensor], iscornercoded
     for i in range(bb_array.shape[0]):
         if bb_array[i][-1] != bg_label:
             if iscornercoded:
-                x, y, w, h = bb_array[i][1:5]
+                x, y, w, h = xyxy_to_xywh_format(bb_array[i][1:5])
                 # unormalize to image dimensions
             else:
                 x, y = bb_array[i][0], bb_array[i][1]
