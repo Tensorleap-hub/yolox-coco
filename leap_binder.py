@@ -53,7 +53,7 @@ def subset_images() -> List[PreprocessResponse]:
     return [training_subset, validation_subset, test_subset]
 
 
-def input_image(idx: int, data: PreprocessResponse, get_scaling_metadata: bool = False) -> np.ndarray:
+def input_image(idx: int, data: PreprocessResponse) -> np.ndarray:
     """
     Returns a BGR image normalized and padded
     """
@@ -61,13 +61,8 @@ def input_image(idx: int, data: PreprocessResponse, get_scaling_metadata: bool =
     x = data['samples'][idx]
     path = os.path.join(dataset_path, f"images/{x['file_name']}")
     image = Image.open(path)
-    # rescale
     image = image.resize((CONFIG['IMAGE_SIZE'][0], CONFIG['IMAGE_SIZE'][1]), Image.BILINEAR)
     return np.asarray(image) / 255.
-    # if get_scaling_metadatata:
-    #     return preprocess_image(image, get_metadata=True)
-    # else:
-    #     return preprocess_image(Image.open(path))
 
 
 def get_annotation_coco(idx: int, data: PreprocessResponse) -> np.ndarray:

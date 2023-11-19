@@ -36,9 +36,9 @@ def check_integration():
         loss = custom_yolo_nas_loss(y_true=y_true_bbs, reg=reg, cls=cls)
         metric = huber_metric(y_true=y_true_bbs, reg=reg, cls=cls)
 
-        # pred_bb_vis = pred_bb_decoder(images[0], reg[0], cls[0])
-        # draw_image_with_boxes(pred_bb_vis.data / 255., pred_bb_vis.bounding_boxes)
-        gt_bb_vis = gt_bb_decoder(images[0], bb_gt[0])
+        pred_bb_vis = pred_bb_decoder(images[0], reg[0], cls[0])
+        draw_image_with_boxes(pred_bb_vis.data / 255., pred_bb_vis.bounding_boxes)
+        gt_bb_vis = gt_bb_decoder(input_image(idx, training_response, False), bb_gt[0])
         draw_image_with_boxes(gt_bb_vis.data / 255., gt_bb_vis.bounding_boxes)
 
 

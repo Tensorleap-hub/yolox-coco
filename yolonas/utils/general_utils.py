@@ -1,11 +1,9 @@
 from copy import deepcopy
-from typing import Union, Optional, List, Dict
+from typing import Union, List, Dict
 
 import numpy as np
 import tensorflow as tf
 from code_loader.contract.responsedataclasses import BoundingBox
-from code_loader.helpers.detection.utils import xyxy_to_xywh_format, xywh_to_xyxy_format
-from code_loader.helpers.detection.yolo.utils import reshape_output_list
 from matplotlib import patches
 import matplotlib.pyplot as plt
 from numpy._typing import NDArray
@@ -34,7 +32,6 @@ def bb_array_to_object(bb_array: Union[NDArray[float], tf.Tensor], iscornercoded
     bb_list = []
     if not isinstance(bb_array, np.ndarray):
         bb_array = np.array(bb_array)
-    # fig, ax = plt.subplots(figsize=(6, 9)
     if len(bb_array.shape) == 3:
         bb_array = bb_array.reshape(-1, bb_array.shape[-1])
     for i in range(bb_array.shape[0]):
