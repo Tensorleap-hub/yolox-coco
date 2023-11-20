@@ -7,8 +7,6 @@ from yolonas.utils.yolo_utils import decoder
 
 
 def custom_yolo_nas_loss(y_true, reg: tf.Tensor, cls: tf.Tensor):
-    reg = tf.transpose(reg, [0, 2, 1])
-    cls = tf.transpose(cls, [0, 2, 1])
     reg_fixed = xyxy_to_xywh_format(reg) / CONFIG['IMAGE_SIZE'][0]
     res = decoder(loc_data=[reg_fixed],
                   conf_data=[cls],

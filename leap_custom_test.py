@@ -1,20 +1,23 @@
 import tensorflow as tf
+from PIL import Image
+import numpy as np
 from leap_binder import (
     subset_images, input_image, get_bbs, confusion_matrix_metric
 )
+from yolonas.config import CONFIG
 from yolonas.custom_layers import MockOneClass
 from yolonas.metrics import custom_yolo_nas_loss, huber_metric
 from yolonas.utils.general_utils import draw_image_with_boxes
 from yolonas.visualizers import pred_bb_decoder, gt_bb_decoder
+import matplotlib.pyplot as plt
 
 
 def check_integration():
-    model_path = 'model/yolo_nas_s.h5'
+    model_path = 'model/yolo_nas_s_permuted_output.h5'
     model = tf.keras.models.load_model(model_path)
     batch = 8
     responses = subset_images()  # get dataset splits
     training_response = responses[0]  # [training, validation, test]
-
     for idx in range(batch):
         images = []
         bb_gt = []
@@ -29,7 +32,6 @@ def check_integration():
         mock_layer = MockOneClass()
         cls = mock_layer(cls)
         loss = custom_yolo_nas_loss(y_true=y_true_bbs, reg=reg, cls=cls)
-        metric = huber_metric(y_true=y_true_bbs, reg=reg, cls=cls)
         conf_mat = confusion_matrix_metric(y_true_bbs, cls, reg, input_img_tf)
 
         pred_bb_vis = pred_bb_decoder(images[0], reg[0], cls[0])

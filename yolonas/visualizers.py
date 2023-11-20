@@ -14,8 +14,6 @@ def pred_bb_decoder(image: np.ndarray, reg: tf.Tensor, cls: tf.Tensor) -> LeapIm
     """
     Overlays the BB predictions on the image
     """
-    reg = tf.transpose(reg, [1, 0])
-    cls = tf.transpose(cls, [1, 0])
     # x1,y1,x2,y2
     reg_fixed = xyxy_to_xywh_format(reg) / image.shape[0]
     bb_object = get_predict_bbox_list(reg_fixed, cls)

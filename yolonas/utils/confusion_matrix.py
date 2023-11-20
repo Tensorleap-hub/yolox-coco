@@ -11,8 +11,6 @@ from yolonas.config import CONFIG
 def confusion_matrix_metric(gt, cls, reg, image):
     #assumes we get predictions in xyxy format in gt AND reg
     #assumes gt is in xywh form
-    reg = tf.transpose(reg, [0, 2, 1])
-    cls = tf.transpose(cls, [0, 2, 1])
     threshold = 0.5
     reg_fixed = xyxy_to_xywh_format(reg) / image.shape[1]
     outputs = decoder(loc_data=[reg_fixed], conf_data=[cls], prior_data=[None],
