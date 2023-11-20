@@ -21,14 +21,6 @@ def load_set(coco, local_filepath, load_union=False):
             imgIds.update(image_ids)
         imgIds = list(imgIds)
     imgs = coco.loadImgs(imgIds)
-
-    allowed_formats = tuple(CONFIG['valid_image_formats'])
-
-    image_list = [
-        img for img in os.listdir(os.path.join(local_filepath, 'images'))
-        if img.lower().endswith(allowed_formats)
-    ]
-    imgs = [img for img in imgs if img['file_name'] in image_list]
     return imgs
 
 

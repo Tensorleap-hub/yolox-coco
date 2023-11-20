@@ -30,27 +30,17 @@ def subset_images() -> List[PreprocessResponse]:
     val = COCO(os.path.join(dataset_path, 'val.json'))
     x_val_raw = load_set(coco=val, load_union=CONFIG['LOAD_UNION_CATEGORIES_IMAGES'], local_filepath=dataset_path)
 
-    test = COCO(os.path.join(dataset_path, 'test.json'))
-    x_test_raw = load_set(coco=test, load_union=CONFIG['LOAD_UNION_CATEGORIES_IMAGES'], local_filepath=dataset_path)
-
     train_size = min(len(x_train_raw), CONFIG['TRAIN_SIZE'])
     val_size = min(len(x_val_raw), CONFIG['VAL_SIZE'])
-    test_size = min(len(x_val_raw), CONFIG['TEST_SIZE'])
 
-    np.random.seed(0)
-    train_idx, val_idx, test_idx = (np.random.choice(len(x_train_raw), train_size, replace=False),
-                                    np.random.choice(len(x_val_raw), val_size, replace=False),
-                                    np.random.choice(len(x_test_raw), test_size, replace=False))
     training_subset = PreprocessResponse(length=train_size, data={'cocofile': train,
-                                                                  'samples': np.take(x_train_raw, train_idx),
+                                                                  'samples': x_train_raw,
                                                                   'subdir': 'train'})
+
     validation_subset = PreprocessResponse(length=val_size, data={'cocofile': val,
-                                                                  'samples': np.take(x_val_raw, val_idx),
+                                                                  'samples': x_val_raw,
                                                                   'subdir': 'val'})
-    test_subset = PreprocessResponse(length=test_size, data={'cocofile': test,
-                                                             'samples': np.take(x_test_raw, test_idx),
-                                                             'subdir': 'test'})
-    return [training_subset, validation_subset, test_subset]
+    return [training_subset, validation_subset]
 
 
 def input_image(idx: int, data: PreprocessResponse) -> np.ndarray:
