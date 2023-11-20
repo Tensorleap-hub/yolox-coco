@@ -199,7 +199,7 @@ def extract_and_cache_bboxes(idx: int, data: Dict):
             bbox[1] += bbox[3]/2.
             bbox /= np.array((img_size[1], img_size[0], img_size[1], img_size[0])).astype(np.float32)
             bboxes[i, :4] = bbox
-            bboxes[i, 4] = 0
+            bboxes[i, 4] = class_id
     bboxes[max_anns:, 4] = CONFIG['BACKGROUND_LABEL']
     return bboxes
 
