@@ -182,11 +182,11 @@ decorators:
 layers:
   - operation: Permute
     data:
-      prediction_type: object detection
+      prediction_type: bbox coordinates
     name: permute_214
     id: '1'
   - operation: Permute
     data:
-      prediction_type: object detection
+      prediction_type: classes
     name: permute_215
     id: '519'

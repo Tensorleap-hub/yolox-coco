@@ -171,9 +171,8 @@ leap_binder.set_preprocess(subset_images)
 leap_binder.set_input(input_image, 'images')
 leap_binder.set_ground_truth(get_bbs, 'bbs')
 # set prediction (object)
-leap_binder.add_prediction('object detection',
-                           ["x", "y", "x", "y"] +
-                           [f"class_{i}" for i in range(CONFIG['CLASSES'])])
+leap_binder.add_prediction('bbox coordinates', ["x1", "y1", "x2", "y2"])
+leap_binder.add_prediction('classes', [f"class_{i}" for i in range(CONFIG['CLASSES'])])
 # set custom loss
 leap_binder.add_custom_loss(placeholder_loss, 'zero_loss')
 leap_binder.add_custom_loss(custom_yolo_nas_loss, 'custom_yolo_nas_loss')
