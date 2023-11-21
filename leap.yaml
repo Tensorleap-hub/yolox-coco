@@ -1,5 +1,5 @@
-codeIntegrationId: 6555ed3b90a9f80019f449f7
-projectId: 6555ed0890a9f80019f449ef
+codeIntegrationId: 6554e7f621744700197e5923
+projectId: 6554e7f321744700197e591f
 secretId: ""
 entryFile: leap_binder.py
 include:
@@ -15,9 +15,7 @@ include:
     - yolonas/utils/decoder.py
     - yolonas/utils/gcs_utils.py
     - yolonas/utils/yolo_utils.py
-    - yolonas/utils/general_utils.p
+    - yolonas/utils/general_utils.py
     - yolonas/utils/confusion_matrix.py
     - yolonas/data/posprocessing.py
     - yolonas/data/preprocessing.py
-    - mappings/leap_mapping_permuted_model.yaml
-    - mappings/leap_mapping_regular.yaml

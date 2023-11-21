@@ -1,2 +1,2 @@
 #!/bin/bash
-cp yamls/with_permute.yaml leap_mapping.yaml
+cp mappings/leap_mapping_permuted_model.yaml leap_mapping.yaml
