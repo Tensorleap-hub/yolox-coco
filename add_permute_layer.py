@@ -1,12 +1,15 @@
 import onnx
 from onnx import helper
+import sys
 
 # --------------------------------------------------------------------------
 # Your onnx model's name
-model_name = 'yolo_nas_s'
+# model_name = 'yolo_nas_s'
 
 # --------------------------------------------------------------------------
-model_path = f"{model_name}.onnx"
+if len(sys.argv) != 3:
+    print("Expected Usage is: python add_permute_layer.py input_onnx_path.onnx output_onnx_path.onnx")
+model_path = f"{sys.argv[1]}"
 model = onnx.load(model_path)
 
 output1_name = model.graph.output[0].name
@@ -42,5 +45,5 @@ model.graph.output[0].name = new_output1_name
 model.graph.output[1].name = new_output2_name
 
 # Save the modified model
-output_model_path = f"{model_name}_permuted_output.onnx"
+output_model_path = f"{sys.argv[2]}"
 onnx.save(model, output_model_path)
