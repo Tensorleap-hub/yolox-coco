@@ -11,6 +11,7 @@ from yolonas.config import CONFIG
 from yolonas.utils.yolo_utils import decoder
 from code_loader.helpers.detection.utils import xyxy_to_xywh_format
 
+
 def get_predict_bbox_list(reg_fixed: tf.Tensor, cls: tf.Tensor) -> List[BoundingBox]:
     """
     Description: This function takes a TensorFlow tensor data as input and returns a list of bounding boxes representing predicted annotations.
@@ -44,7 +45,7 @@ def bb_array_to_object(bb_array: Union[NDArray[float], tf.Tensor], iscornercoded
                 w, h = bb_array[i][2], bb_array[i][3]
             conf = 1 if is_gt else bb_array[i][0]
             curr_bb = BoundingBox(x=x, y=y, width=w, height=h, confidence=conf,
-                                  label=str(bb_array[i][min(5, len(bb_array[i]) - 1)])) #FIXME add categories
+                                  label=str(bb_array[i][min(5, len(bb_array[i]) - 1)]))  # FIXME add categories
 
             bb_list.append(curr_bb)
     return bb_list
@@ -193,13 +194,13 @@ def extract_and_cache_bboxes(idx: int, data: Dict):
         ann = anns[i]
         if isinstance(ann['bbox'], list):
             img_size = (x['height'], x['width'])
-            class_id = ann['category_id']
+            # class_id = ann['category_id']
             bbox = np.expand_dims(ann['bbox'], 0)[0].astype(np.float32)
-            bbox[0] += bbox[2]/2.
-            bbox[1] += bbox[3]/2.
+            bbox[0] += bbox[2] / 2.
+            bbox[1] += bbox[3] / 2.
             bbox /= np.array((img_size[1], img_size[0], img_size[1], img_size[0])).astype(np.float32)
             bboxes[i, :4] = bbox
-            bboxes[i, 4] = class_id
+            bboxes[i, 4] = CONFIG['CLASS_ID']
     bboxes[max_anns:, 4] = CONFIG['BACKGROUND_LABEL']
     return bboxes
 

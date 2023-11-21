@@ -12,7 +12,7 @@ from pycocotools.coco import COCO
 from yolonas.config import dataset_path, CONFIG
 from yolonas.custom_layers import MockOneClass
 from yolonas.data.preprocessing import load_set, preprocess_image
-from yolonas.metrics import custom_yolo_nas_loss, placeholder_loss, huber_metric
+from yolonas.metrics import custom_yolo_nas_loss, placeholder_loss
 from yolonas.utils.general_utils import extract_and_cache_bboxes
 from yolonas.visualizers import pred_bb_decoder, gt_bb_decoder
 from yolonas.utils.confusion_matrix import confusion_matrix_metric
@@ -181,8 +181,6 @@ leap_binder.set_visualizer(gt_bb_decoder, 'bb_gt_decoder', LeapDataType.ImageWit
 leap_binder.set_visualizer(pred_bb_decoder, 'pred_bb_decoder', LeapDataType.ImageWithBBox)
 leap_binder.add_custom_metric(confusion_matrix_metric, "Confusion metric")
 
-# # set custom metrics
-leap_binder.add_custom_metric(huber_metric, 'huber')
 #
 leap_binder.set_custom_layer(MockOneClass, 'reduce_to_one_class')
 # # set metadata
