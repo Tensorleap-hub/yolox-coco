@@ -1,10 +1,37 @@
 # YOLO-NAS Object Detection
+## Prerequisites
+### Pyenv
+We recommend on managing your python versions via `pyenv`. <br>
+To install pyenv on your specific OS, please refer to this link: **[pyenv-installation](https://github.com/pyenv/pyenv#installation)** <br>
+After installing and setting up the shell environment you can install any python version, for this project it is recommended to install python `3.9.16`
+```
+pyenv install 3.9.16
+```
+After installation run the following from a shell within the project root `yolo-nas-coco`
+```
+pyenv local 3.9.16
+```
+this will set your local python to the specified version
+### Poetry 
+We recommend using poetry as your python dependency manager, and we supplied an environment defined by the `poetry.lock` file. <br>
+To install poetry on your specific OS please refer to this link: **[poetry-installation](https://python-poetry.org/docs/#installing-with-the-official-installer)** <br>
+when poetry is installed, run the following commands from within the project root folder `yolo-nas-coco` to set the environment python version and create the environment:
+```
+poetry env use 3.9.16
+poetry install
+```
+
 ## Model Import
 To import the model into `Tensorleap`, first place it under the `model` directory.
 Then run the following commands from a shell within the project root directory `yolo-nas-coco`:
 ```
 sudo chmod +x upload_models.sh
 ```
+make sure your poetry env is activated by running:
+```commandline
+poetry shell
+```
+and then run the script
 ```
 ./upload_models.sh model/<your-model-name>
 ```
