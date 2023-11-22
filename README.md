@@ -1,5 +1,30 @@
 # YOLO-NAS Object Detection
+The repository below is simulating integration to your local directory.
+To understand the integration work that is required for that, please look at `leap_binder.py`
+
+# Quick start
+Set the `dataset_path` value in `yolonas/object_detection_config.yaml` to your local dataset path.
+
+Simply run:
+```
+leap project push model/yolo_nas_s_c_1.onnx
+```
+* Please replace the model path with your model
+
+Now, we can open http://localhost:4589 and evaluate our model.
+
+We also made another version that adds permute layers to the end of the model:
+
+```
+./upload_permuted_model.sh model/yolo_nas_s_c_1.onnx
+```
+
+* This option is preferable if the model layer name is different since the `leap_mapping.yaml` file won't find the layers it expects.
+* Please replace the model path with your model
+
+
 ## Prerequisites
+
 ### Pyenv
 We recommend on managing your python versions via `pyenv`. <br>
 To install pyenv on your specific OS, please refer to this link: **[pyenv-installation](https://github.com/pyenv/pyenv#installation)** <br>
@@ -77,11 +102,10 @@ curl -s https://raw.githubusercontent.com/tensorleap/leap-cli/master/install.sh 
 To login to Tensorleap:
 
 ```
-tensorleap auth login [api key] [api url].
+leap auth login [api key] [api url].
 ```
 
-- API Key is your Tensorleap token (see how to generate a CLI token in the section below).
-- API URL is your Tensorleap environment URL: https://api.CLIENT_NAME.tensorleap.ai/api/v2
+Go to resource management and copy the command from the `generate cli token` button at the bottom of the page.
 
 <br>
 
@@ -124,13 +148,3 @@ include:
 ## Testing
 
 To test the system we can run `leap_test.py` file using poetry:
-
-```
-poetry run test
-```
-
-This file will execute several tests on leap_binder.py script to assert that the implemented binding functions: preprocess, encoders,  metadata, etc.,  run smoothly.
-
-*For further explanation please refer to the [docs](https://docs.tensorleap.ai/)*
-
-
