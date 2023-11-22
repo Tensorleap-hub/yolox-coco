@@ -75,10 +75,6 @@ decorators:
       user_unique_name: pred_bb_decoder
     id: '563'
     inputs:
-      image:
-        - outputKey: images
-          operation: Input
-          id: '564'
       reg:
         - outputKey: feature_map
           operation: Permute
@@ -89,6 +85,10 @@ decorators:
           operation: Permute
           name: permute_215
           id: '519'
+      image:
+        - outputKey: images
+          operation: Input
+          id: '564'
     outputs: {}
   - operation: Input
     data:
@@ -151,24 +151,24 @@ decorators:
       user_unique_name: Confusion metric
     id: '566'
     inputs:
-      cls:
-        - outputKey: feature_map
-          operation: Permute
-          name: permute_215
-          id: '519'
       reg:
         - outputKey: feature_map
           operation: Permute
           name: permute_214
           id: '1'
-      image:
-        - outputKey: images
-          operation: Input
-          id: '564'
+      cls:
+        - outputKey: feature_map
+          operation: Permute
+          name: permute_215
+          id: '519'
       gt:
         - outputKey: bbs
           operation: GroundTruth
           id: '553'
+      image:
+        - outputKey: images
+          operation: Input
+          id: '564'
     outputs: {}
   - operation: Visualizer
     data:
@@ -182,14 +182,23 @@ decorators:
       user_unique_name: bb_gt_decoder
     id: '567'
     inputs:
-      image:
-        - outputKey: images
-          operation: Input
-          id: '564'
       bb_gt:
         - outputKey: bbs
           operation: GroundTruth
           id: '553'
+      image:
+        - outputKey: images
+          operation: Input
+          id: '564'
     outputs: {}
-layers: []
-
+layers:
+  - operation: Permute
+    data:
+      prediction_type: bbox coordinates
+    name: permute_214
+    id: '1'
+  - operation: Permute
+    data:
+      prediction_type: classes
+    name: permute_215
+    id: '519'
