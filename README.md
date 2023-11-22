@@ -20,12 +20,21 @@ when poetry is installed, run the following commands from within the project roo
 poetry env use 3.9.16
 poetry install
 ```
-
+## Configure Dataset Path
+The integration script expect a pth to a coco format dataset directory. <br>
+Set the `dataset_path` value in `yolonas/object_detection_config.yaml` to your local dataset path.<br>
+The dataset directory should include the following files and folders:
+```
+- train.json
+- val.json
+- test.json
+- images/
+```
 ## Model Import
 To import the model into `Tensorleap`, first place it under the `model` directory.
 Then run the following commands from a shell within the project root directory `yolo-nas-coco`:
 ```
-sudo chmod +x upload_models.sh
+sudo chmod +x upload_permuted_model.sh
 ```
 make sure your poetry env is activated by running:
 ```commandline
@@ -33,9 +42,9 @@ poetry shell
 ```
 and then run the script
 ```
-./upload_models.sh model/<your-model-name>
+./upload_permuted_model.sh model/<your-model-name>
 ```
-the `upload_models.sh` script will import your raw model as well as a version of it with permuted 
+the `upload_permuted_model.sh` script will import your raw model with permuted 
 outputs as well as the corresponding mapping so that you are ready to start evaluating 
 
 
