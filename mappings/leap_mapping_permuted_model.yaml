@@ -1,235 +1,234 @@
-|
-  decorators:
-    - operation: Input
+decorators:
+  - operation: Input
+    data:
+      type: Input
+      output_name: images
+    id: '173'
+    inputs: {}
+    outputs:
+      images:
+        - inputKey: input
+          operation: Permute
+          name: permute_213
+          id: '172'
+        - inputKey: data
+          operation: Visualizer
+          id: '558'
+  - operation: GroundTruth
+    data:
+      type: GroundTruth
+      output_name: bbs
+      selected: bbs
+    id: '553'
+    inputs: {}
+    outputs:
+      bbs:
+        - inputKey: gt
+          operation: Metric
+          id: '566'
+        - inputKey: bb_gt
+          operation: Visualizer
+          id: '567'
+        - inputKey: bb_gt
+          operation: Metric
+          id: '569'
+        - inputKey: bb_gt
+          operation: CustomLoss
+          id: '570'
+  - operation: Adam
+    data:
+      type: Optimizer
+      custom_input_keys:
+        - 554-0
+      arg_names:
+        - '0'
+    id: '554'
+    inputs:
+      '0':
+        - outputKey: loss
+          operation: CustomLoss
+          id: '570'
+    outputs: {}
+  - operation: Visualizer
+    data:
+      type: Visualizer
+      name: Image
+      visualizer_name: Image
+      visualizer_type: Image
+      arg_names:
+        - data
+      user_unique_name: Image
+    id: '558'
+    inputs:
       data:
-        type: Input
-        output_name: images
-      id: '173'
-      inputs: {}
-      outputs:
-        images:
-          - inputKey: input
-            operation: Permute
-            name: permute_213
-            id: '172'
-          - inputKey: data
-            operation: Visualizer
-            id: '558'
-    - operation: GroundTruth
-      data:
-        type: GroundTruth
-        output_name: bbs
-        selected: bbs
-      id: '553'
-      inputs: {}
-      outputs:
-        bbs:
-          - inputKey: gt
-            operation: Metric
-            id: '566'
-          - inputKey: bb_gt
-            operation: Visualizer
-            id: '567'
-          - inputKey: bb_gt
-            operation: Metric
-            id: '569'
-          - inputKey: bb_gt
-            operation: CustomLoss
-            id: '570'
-    - operation: Adam
-      data:
-        type: Optimizer
-        custom_input_keys:
-          - 554-0
-        arg_names:
-          - '0'
-      id: '554'
-      inputs:
-        '0':
-          - outputKey: loss
-            operation: CustomLoss
-            id: '570'
-      outputs: {}
-    - operation: Visualizer
-      data:
-        type: Visualizer
-        name: Image
-        visualizer_name: Image
-        visualizer_type: Image
-        arg_names:
-          - data
-        user_unique_name: Image
-      id: '558'
-      inputs:
-        data:
-          - outputKey: images
-            operation: Input
-            id: '173'
-      outputs: {}
-    - operation: Visualizer
-      data:
-        type: Visualizer
-        name: pred_bb_decoder
-        visualizer_name: pred_bb_decoder
-        visualizer_type: ImageWithBBox
-        arg_names:
-          - image
-          - reg
-          - cls
-        user_unique_name: pred_bb_decoder
-      id: '563'
-      inputs:
-        reg:
-          - outputKey: feature_map
-            operation: Permute
-            name: permute_214
-            id: '1'
-        cls:
-          - outputKey: feature_map
-            operation: Permute
-            name: permute_215
-            id: '519'
-        image:
-          - outputKey: images
-            operation: Input
-            id: '564'
-      outputs: {}
-    - operation: Input
-      data:
-        type: Input
-        output_name: images
-        selected: images
-      id: '564'
-      inputs: {}
-      outputs:
-        images:
-          - inputKey: image
-            operation: Visualizer
-            id: '563'
-          - inputKey: image
-            operation: Metric
-            id: '566'
-          - inputKey: image
-            operation: Visualizer
-            id: '567'
-    - operation: Metric
-      data:
-        type: Metric
-        name: Confusion metric
-        metric_name: Confusion metric
-        arg_names:
-          - gt
-          - cls
-          - reg
-          - image
-        user_unique_name: Confusion metric
-      id: '566'
-      inputs:
-        reg:
-          - outputKey: feature_map
-            operation: Permute
-            name: permute_214
-            id: '1'
-        cls:
-          - outputKey: feature_map
-            operation: Permute
-            name: permute_215
-            id: '519'
-        image:
-          - outputKey: images
-            operation: Input
-            id: '564'
-        gt:
-          - outputKey: bbs
-            operation: GroundTruth
-            id: '553'
-      outputs: {}
-    - operation: Visualizer
-      data:
-        type: Visualizer
-        name: bb_gt_decoder
-        visualizer_name: bb_gt_decoder
-        visualizer_type: ImageWithBBox
-        arg_names:
-          - image
-          - bb_gt
-        user_unique_name: bb_gt_decoder
-      id: '567'
-      inputs:
-        image:
-          - outputKey: images
-            operation: Input
-            id: '564'
-        bb_gt:
-          - outputKey: bbs
-            operation: GroundTruth
-            id: '553'
-      outputs: {}
-    - operation: Metric
-      data:
-        type: Metric
-        name: od_metrics
-        metric_name: od_metrics
-        arg_names:
-          - bb_gt
-          - reg
-          - cls
-        user_unique_name: od_metrics
-      id: '569'
-      inputs:
-        reg:
-          - outputKey: feature_map
-            operation: Permute
-            name: permute_214
-            id: '1'
-        cls:
-          - outputKey: feature_map
-            operation: Permute
-            name: permute_215
-            id: '519'
-        bb_gt:
-          - outputKey: bbs
-            operation: GroundTruth
-            id: '553'
-      outputs: {}
-    - operation: CustomLoss
-      data:
-        arg_names:
-          - bb_gt
-          - reg
-          - cls
-        name: od_loss
-        selected: od_loss
-        type: CustomLoss
-      id: '570'
-      inputs:
-        reg:
-          - outputKey: feature_map
-            operation: Permute
-            name: permute_214
-            id: '1'
-        cls:
-          - outputKey: feature_map
-            operation: Permute
-            name: permute_215
-            id: '519'
-        bb_gt:
-          - outputKey: bbs
-            operation: GroundTruth
-            id: '553'
-      outputs:
-        loss:
-          - inputKey: '0'
-            operation: Adam
-            id: '554'
-  layers:
-    - operation: Permute
-      data:
-        prediction_type: bbox coordinates
-      name: permute_214
-      id: '1'
-    - operation: Permute
-      data:
-        prediction_type: classes
-      name: permute_215
-      id: '519'
+        - outputKey: images
+          operation: Input
+          id: '173'
+    outputs: {}
+  - operation: Visualizer
+    data:
+      type: Visualizer
+      name: pred_bb_decoder
+      visualizer_name: pred_bb_decoder
+      visualizer_type: ImageWithBBox
+      arg_names:
+        - image
+        - reg
+        - cls
+      user_unique_name: pred_bb_decoder
+    id: '563'
+    inputs:
+      reg:
+        - outputKey: feature_map
+          operation: Permute
+          name: permute_214
+          id: '1'
+      cls:
+        - outputKey: feature_map
+          operation: Permute
+          name: permute_215
+          id: '519'
+      image:
+        - outputKey: images
+          operation: Input
+          id: '564'
+    outputs: {}
+  - operation: Input
+    data:
+      type: Input
+      output_name: images
+      selected: images
+    id: '564'
+    inputs: {}
+    outputs:
+      images:
+        - inputKey: image
+          operation: Visualizer
+          id: '563'
+        - inputKey: image
+          operation: Metric
+          id: '566'
+        - inputKey: image
+          operation: Visualizer
+          id: '567'
+  - operation: Metric
+    data:
+      type: Metric
+      name: Confusion metric
+      metric_name: Confusion metric
+      arg_names:
+        - gt
+        - cls
+        - reg
+        - image
+      user_unique_name: Confusion metric
+    id: '566'
+    inputs:
+      reg:
+        - outputKey: feature_map
+          operation: Permute
+          name: permute_214
+          id: '1'
+      cls:
+        - outputKey: feature_map
+          operation: Permute
+          name: permute_215
+          id: '519'
+      image:
+        - outputKey: images
+          operation: Input
+          id: '564'
+      gt:
+        - outputKey: bbs
+          operation: GroundTruth
+          id: '553'
+    outputs: {}
+  - operation: Visualizer
+    data:
+      type: Visualizer
+      name: bb_gt_decoder
+      visualizer_name: bb_gt_decoder
+      visualizer_type: ImageWithBBox
+      arg_names:
+        - image
+        - bb_gt
+      user_unique_name: bb_gt_decoder
+    id: '567'
+    inputs:
+      image:
+        - outputKey: images
+          operation: Input
+          id: '564'
+      bb_gt:
+        - outputKey: bbs
+          operation: GroundTruth
+          id: '553'
+    outputs: {}
+  - operation: Metric
+    data:
+      type: Metric
+      name: od_metrics
+      metric_name: od_metrics
+      arg_names:
+        - bb_gt
+        - reg
+        - cls
+      user_unique_name: od_metrics
+    id: '569'
+    inputs:
+      reg:
+        - outputKey: feature_map
+          operation: Permute
+          name: permute_214
+          id: '1'
+      cls:
+        - outputKey: feature_map
+          operation: Permute
+          name: permute_215
+          id: '519'
+      bb_gt:
+        - outputKey: bbs
+          operation: GroundTruth
+          id: '553'
+    outputs: {}
+  - operation: CustomLoss
+    data:
+      arg_names:
+        - bb_gt
+        - reg
+        - cls
+      name: od_loss
+      selected: od_loss
+      type: CustomLoss
+    id: '570'
+    inputs:
+      reg:
+        - outputKey: feature_map
+          operation: Permute
+          name: permute_214
+          id: '1'
+      cls:
+        - outputKey: feature_map
+          operation: Permute
+          name: permute_215
+          id: '519'
+      bb_gt:
+        - outputKey: bbs
+          operation: GroundTruth
+          id: '553'
+    outputs:
+      loss:
+        - inputKey: '0'
+          operation: Adam
+          id: '554'
+layers:
+  - operation: Permute
+    data:
+      prediction_type: bbox coordinates
+    name: permute_214
+    id: '1'
+  - operation: Permute
+    data:
+      prediction_type: classes
+    name: permute_215
+    id: '519'

@@ -32,3 +32,12 @@ decoder = Decoder(num_classes=CONFIG['CLASSES'],
                   semantic_instance=False,
                   class_agnostic_nms=True,
                   has_object_logit=False)
+
+DECODER = Decoder(CONFIG['CLASSES'],
+                  background_label=CONFIG['BACKGROUND_LABEL'],
+                  top_k=50,
+                  conf_thresh=CONFIG['CONF_THRESH'],
+                  nms_thresh=CONFIG['NMS_THRESH'],
+                  semantic_instance=False,
+                  max_bb=50,
+                  max_bb_per_layer=50)
