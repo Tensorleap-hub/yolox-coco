@@ -1,7 +1,7 @@
 dataset_path: /Users/ranhomri/tensorleap/data/coco-2017 # this foldr is expected to contain a json file for each subset and an `images` dir
 
-TRAIN_SIZE: 100
-VAL_SIZE: 100
+TRAIN_SIZE: 8
+VAL_SIZE: 8
 TEST_SIZE: 8
 
 BACKGROUND_LABEL: 2
@@ -22,3 +22,29 @@ STRIDES:
 - 8
 - 16
 - 32
+FEATURE_MAPS:
+- - 80
+  - 80
+- - 40
+  - 40
+- - 20
+  - 20
+BOX_SIZES:
+- - - 10
+    - 13
+  - - 16
+    - 30
+  - - 33
+    - 23
+- - - 30
+    - 61
+  - - 62
+    - 45
+  - - 59
+    - 119
+- - - 116
+    - 90
+  - - 156
+    - 198
+  - - 373
+    - 326

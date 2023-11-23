@@ -3,7 +3,7 @@ from leap_binder import (
     subset_images, input_image, get_bbs, confusion_matrix_metric, metadata_dict
 )
 from yolonas.custom_layers import MockOneClass
-from yolonas.metrics import custom_yolo_nas_loss
+from yolonas.metrics import custom_yolo_nas_loss, compute_losses, od_loss
 from yolonas.utils.general_utils import draw_image_with_boxes
 from yolonas.visualizers import pred_bb_decoder, gt_bb_decoder
 
@@ -11,7 +11,7 @@ from yolonas.visualizers import pred_bb_decoder, gt_bb_decoder
 def check_integration():
     model_path = 'model/yolo_nas_s_c_1_permuted_output.h5'
     model = tf.keras.models.load_model(model_path)
-    batch = 8
+    batch = 1
     responses = subset_images()  # get dataset splits
     training_response = responses[0]
     images = []
@@ -24,7 +24,7 @@ def check_integration():
 
     input_img_tf = tf.convert_to_tensor(images)
     reg, cls = model([input_img_tf])  # infer and get model prediction
-
+    loss = od_loss(y_true_bbs, reg, cls)
     loss = custom_yolo_nas_loss(y_true=y_true_bbs, reg=reg, cls=cls)
     conf_mat = confusion_matrix_metric(y_true_bbs, cls, reg, input_img_tf)
 

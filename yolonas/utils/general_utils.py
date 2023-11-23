@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Union, List, Dict
+from typing import Tuple, List, Union, Dict
 
 import numpy as np
 import tensorflow as tf
@@ -10,6 +10,7 @@ from numpy._typing import NDArray
 from yolonas.config import CONFIG
 from yolonas.utils.yolo_utils import decoder
 from code_loader.helpers.detection.utils import xyxy_to_xywh_format
+from code_loader.helpers.detection.yolo.enums import YoloDecodingType
 
 
 def get_predict_bbox_list(reg_fixed: tf.Tensor, cls: tf.Tensor) -> List[BoundingBox]:
@@ -240,3 +241,63 @@ def draw_image_with_boxes(image, bounding_boxes):
 
     # Show the image with bounding boxes
     plt.show()
+
+
+def scale_loc_prediction(loc_pred: List[tf.Tensor], decoded: bool = False,
+                         image_size: Union[float, Tuple[float, float]] = 640.,
+                         strides: Tuple[int, int, int] = (8, 16, 32),
+                         decode_type: YoloDecodingType = YoloDecodingType.YOLOV7,
+                         feature_maps: Tuple[Tuple[int, int], ...] = ((80, 80), (40, 40), (20, 20))) -> \
+        List[tf.Tensor]:
+    new_loc_pred = [None] * len(loc_pred)
+    if isinstance(image_size, int) or isinstance(image_size, float):
+        scale_arr: NDArray[np.float32] = np.array([image_size, image_size, image_size, image_size], dtype=np.float32)
+    else:
+        scale_arr = np.array([*image_size[::-1], *image_size[::-1]], dtype=np.float32)
+    if decoded:
+        new_loc_pred = [loc / scale_arr for loc in loc_pred]
+    else:
+        if decode_type == YoloDecodingType.YOLOV7:
+            for i in range(len(loc_pred)):
+                new_loc_pred[i] = tf.concat(
+                    [(strides[i] * (2 * tf.sigmoid(loc_pred[i][..., :2]) - 0.5)) / scale_arr[:2],
+                     2 * tf.sigmoid(loc_pred[i][..., 2:])], axis=-1)
+        elif decode_type == YoloDecodingType.YOLOX:
+            for i, loc in enumerate(loc_pred):
+                x, y = tf.meshgrid(tf.range(feature_maps[i][1], dtype=float), tf.range(feature_maps[i][0], dtype=float))
+                mesh = tf.stack([x, y], axis=-1)[None, :]
+                new_loc_pred[i] = tf.concat(
+                    [tf.reshape(
+                        (tf.reshape(loc[..., :2], (loc.shape[0], *feature_maps[i], -1)) + mesh) * np.array(strides[i])
+                        , (loc.shape[0], feature_maps[i][0] * feature_maps[i][1], -1)),
+                     tf.exp(loc[..., 2:4]) * np.array(strides[i])], axis=2) / scale_arr
+    return new_loc_pred
+
+
+def reshape_output_list(keras_output: tf.Tensor, image_size: int, priors: int = 1,
+                        feature_maps: Tuple[Tuple[int, int], ...] = ((80, 80), (40, 40), (20, 20)),
+                        decoded: bool = False, decode_type: YoloDecodingType = YoloDecodingType.YOLOV7) -> \
+        Tuple[List[tf.Tensor], List[tf.Tensor]]:
+    """
+    reshape the mode's output to two lists sized [NUM_FEATURES] following detectron2 convention.
+    class_list item: (BATCH_SIZE, NUM_ANCHORS, CLASSES)
+    loc_list item:  (BATCH_SIZE, NUM_ANCHORS, 4)
+    """
+    num_features = len(feature_maps)
+    j = 0
+    loc_pred_list = []
+    class_pred_list = []
+    for k in range(num_features):
+        # add classes prediction
+        num_elements = feature_maps[k][0] * feature_maps[k][1] * priors
+        loc_pred_list.append(keras_output[:, j:j + num_elements, :4])
+        class_pred_list.append(keras_output[:, j:j + num_elements, 4:])
+        j += num_elements
+    if j != keras_output.shape[1]:
+        raise Exception("There was an error in reshaping Yolo output.\n"
+                        "Make that you call 'reshape_output_list' with the correct feature_maps and priors:"
+                        "The sum of feature_maps[k][0]*feature_maps[k][1]*priors should equal #BB, which is"
+                        "model_output.shape[1]")
+    loc_pred_list = scale_loc_prediction(loc_pred_list, decoded, image_size=image_size,
+                                         decode_type=decode_type, feature_maps=feature_maps)
+    return class_pred_list, loc_pred_list
