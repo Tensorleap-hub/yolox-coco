@@ -11,7 +11,7 @@ from pycocotools.coco import COCO
 
 from yolonas.config import dataset_path, CONFIG
 from yolonas.custom_layers import MockOneClass
-from yolonas.data.preprocessing import load_set, preprocess_image
+from yolonas.data.preprocessing import preprocess_image
 from yolonas.metrics import custom_yolo_nas_loss, placeholder_loss, general_metrics_dict, od_loss
 from yolonas.utils.general_utils import extract_and_cache_bboxes
 from yolonas.visualizers import pred_bb_decoder, gt_bb_decoder
