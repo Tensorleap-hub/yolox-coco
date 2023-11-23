@@ -195,13 +195,13 @@ def extract_and_cache_bboxes(idx: int, data: Dict):
         ann = anns[i]
         if isinstance(ann['bbox'], list):
             img_size = (x['height'], x['width'])
-            # class_id = ann['category_id']
+            class_id = ann['category_id']
             bbox = np.expand_dims(ann['bbox'], 0)[0].astype(np.float32)
             bbox[0] += bbox[2] / 2.
             bbox[1] += bbox[3] / 2.
             bbox /= np.array((img_size[1], img_size[0], img_size[1], img_size[0])).astype(np.float32)
             bboxes[i, :4] = bbox
-            bboxes[i, 4] = CONFIG['CLASS_ID']
+            bboxes[i, 4] = class_id
     bboxes[max_anns:, 4] = CONFIG['BACKGROUND_LABEL']
     return bboxes
 
