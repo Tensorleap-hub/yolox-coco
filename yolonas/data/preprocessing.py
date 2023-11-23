@@ -8,21 +8,6 @@ from yolonas.config import CONFIG
 from yolonas.utils.dataclasses import RescaleMetadata, PaddingCoordinates
 
 
-def load_set(coco, local_filepath, load_union=False):
-    # get all images containing given categories
-    CATEGORIES = []
-    catIds = coco.getCatIds(CATEGORIES)  # Fetch class IDs only corresponding to the Classes
-    if not load_union:
-        imgIds = coco.getImgIds(catIds=catIds)  # Get all images containing the Category IDs together
-    else:  # get images contains any of the classes
-        imgIds = set()
-        for cat_id in catIds:
-            image_ids = coco.getImgIds(catIds=[cat_id])
-            imgIds.update(image_ids)
-        imgIds = list(imgIds)
-    imgs = coco.loadImgs(imgIds)
-    return imgs
-
 
 def preprocess_image(image: Image, get_metadata: bool = False) -> Union[np.ndarray, Tuple[RescaleMetadata, PaddingCoordinates]]:
     width, height = image.size
