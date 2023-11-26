@@ -11,11 +11,14 @@ from pycocotools.coco import COCO
 
 from yolonas.config import dataset_path, CONFIG
 from yolonas.custom_layers import MockOneClass
-from yolonas.data.preprocessing import preprocess_image
 from yolonas.metrics import custom_yolo_nas_loss, placeholder_loss, general_metrics_dict, od_loss
-from yolonas.utils.general_utils import extract_and_cache_bboxes
+from yolonas.utils.general_utils import extract_and_cache_bboxes, map_class_ids
 from yolonas.visualizers import pred_bb_decoder, gt_bb_decoder
 from yolonas.utils.confusion_matrix import confusion_matrix_metric
+
+coco = COCO(os.path.join(dataset_path, CONFIG['train_file']))
+leap_binder.cache_container['class_id_to_name'] = {class_id: value['name'] for class_id, value in
+                                                   coco.cats.items()}
 
 
 # ----------------------------------------------------data processing--------------------------------------------------
@@ -24,13 +27,13 @@ def subset_images() -> List[PreprocessResponse]:
     This function returns the training and validation datasets in the format expected by tensorleap
     """
     # initialize COCO api for instance annotations
-    train_coco = COCO(os.path.join(dataset_path, 'filtered_train.json'))
+    train_coco = COCO(os.path.join(dataset_path, CONFIG['train_file']))
     imgIds = train_coco.getImgIds()
     imgs = train_coco.loadImgs(imgIds)
     existing_images = set(train_coco.imgs.keys())
     x_train_raw = train_coco.loadImgs(set(imgIds).intersection(existing_images))
 
-    val_coco = COCO(os.path.join(dataset_path, 'filtered_train.json'))
+    val_coco = COCO(os.path.join(dataset_path, CONFIG['val_file']))
     imgIds = val_coco.getImgIds()
     imgs = val_coco.loadImgs(imgIds)
     existing_images = set(val_coco.imgs.keys())
@@ -38,7 +41,6 @@ def subset_images() -> List[PreprocessResponse]:
 
     train_size = min(len(x_train_raw), CONFIG['TRAIN_SIZE'])
     val_size = min(len(x_val_raw), CONFIG['VAL_SIZE'])
-
     training_subset = PreprocessResponse(length=train_size, data={'cocofile': train_coco,
                                                                   'samples': x_train_raw,
                                                                   'subdir': 'train'})
@@ -72,6 +74,7 @@ def get_annotation_coco(idx: int, data: PreprocessResponse) -> np.ndarray:
 def get_bbs(idx: int, data: PreprocessResponse) -> np.ndarray:
     data = data.data
     bboxes = extract_and_cache_bboxes(idx, data)
+    bboxes = map_class_ids(bboxes)
     return bboxes
 
 
@@ -105,18 +108,22 @@ def bbox_num(bbs: np.ndarray) -> int:
 
 def get_avg_bb_area(bbs: np.ndarray) -> float:
     valid_bbs = bbs[bbs[..., -1] != CONFIG['BACKGROUND_LABEL']]
-    areas = valid_bbs[:, 2] * valid_bbs[:, 3]
-    return float(round(areas.mean(), 3))
+    if len(valid_bbs) > 0:
+        areas = valid_bbs[:, 2] * valid_bbs[:, 3]
+        return float(round(areas.mean(), 3))
+    else:
+        return float(0.0)
 
 
 def get_avg_bb_aspect_ratio(bbs: np.ndarray) -> float:
     valid_bbs = bbs[bbs[..., -1] != CONFIG['BACKGROUND_LABEL']]
-    aspect_ratios = valid_bbs[:, 2] / valid_bbs[:, 3]
-    return float(round(aspect_ratios.mean(), 3))
+    if len(valid_bbs) > 0:
+        aspect_ratios = valid_bbs[:, 2] / valid_bbs[:, 3]
+        return float(round(aspect_ratios.mean(), 3))
+    else:
+        return float(0.0)
 
 
-#
-#
 def get_instances_num(bbs: np.ndarray) -> float:
     valid_bbs = bbs[bbs[..., -1] != CONFIG['BACKGROUND_LABEL']]
     return float(round(valid_bbs.shape[0], 3))
@@ -126,8 +133,8 @@ def get_instances_num(bbs: np.ndarray) -> float:
 #     occlusion_threshold = 0.2  # Example threshold value
 #     occlusions_count = count_obj_bbox_occlusions(img, bboxes, occlusion_threshold, calc_avg_flag)
 #     return occlusions_count
-
-
+#
+#
 # def get_obj_bbox_occlusions_avg(img: np.ndarray, bboxes: np.ndarray) -> float:
 #     return get_obj_bbox_occlusions_count(img, bboxes, calc_avg_flag=True)
 
@@ -158,10 +165,13 @@ def metadata_dict(idx: int, data: PreprocessResponse) -> Dict[str, Union[float, 
         "bbox_aspect_ratio": get_avg_bb_aspect_ratio(bbs),
         "duplicate_bb": count_duplicate_bbs(bbs),
         "small_bbs_number": count_small_bbs(bbs),
+        "image_mean": float(img.mean()),
+        "image_std": float(img.std()),
+        "image_min": float(img.min()),
+        "image_max": float(img.max())
         # "count_total_obj_bbox_occlusions": get_obj_bbox_occlusions_count(img, bbs),
         # "avg_obj_bbox_occlusions": get_obj_bbox_occlusions_avg(img, bbs),
     }
-
     return metadatas
 
 

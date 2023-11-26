@@ -1,5 +1,7 @@
 from code_loader.helpers.detection.utils import xyxy_to_xywh_format
 from code_loader.helpers.detection.yolo.utils import jaccard, xywh_to_xyxy_format
+
+from code_loader import leap_binder
 from yolonas.utils.yolo_utils import decoder
 from code_loader.contract.datasetclasses import ConfusionMatrixElement
 from code_loader.contract.enums import ConfusionMatrixValue
@@ -11,6 +13,8 @@ from yolonas.config import CONFIG
 def confusion_matrix_metric(gt, cls, reg, image):
     #assumes we get predictions in xyxy format in gt AND reg
     #assumes gt is in xywh form
+    id_to_name = leap_binder.cache_container['class_id_to_name']
+    consecutive_label_to_original = CONFIG['labels_consecutive_to_original']
     threshold = 0.5
     reg_fixed = xyxy_to_xywh_format(reg) / image.shape[1]
     outputs = decoder(loc_data=[reg_fixed], conf_data=[cls], prior_data=[None],
@@ -25,7 +29,8 @@ def confusion_matrix_metric(gt, cls, reg, image):
             max_iou_ind = np.argmax(ious, axis=1)
             for i, prediction in enumerate(prediction_detected):
                 gt_idx = int(gt[batch_i, max_iou_ind[i], 4])
-                gt_label = f"class_{gt_idx}"
+                class_name = id_to_name.get(consecutive_label_to_original.get(gt_idx))
+                gt_label = f"{class_name}"
                 confidence = outputs[batch_i][i, 0]
                 if prediction: #TP
                     confusion_matrix_elements.append(ConfusionMatrixElement(
@@ -34,7 +39,8 @@ def confusion_matrix_metric(gt, cls, reg, image):
                         float(confidence)
                     ))
                 else: #FP
-                    pred_label = f"class_{int(outputs[batch_i][i, -1])}"
+                    class_name = id_to_name.get(consecutive_label_to_original.get(int(outputs[batch_i][i, -1])))
+                    pred_label = f"{class_name}"
                     confusion_matrix_elements.append(ConfusionMatrixElement(
                         str(pred_label),
                         ConfusionMatrixValue.Negative,
@@ -46,8 +52,9 @@ def confusion_matrix_metric(gt, cls, reg, image):
         for k, gt_detection in enumerate(gts_detected):
             label_idx = gt[batch_i, k, -1]
             if not gt_detection and label_idx != CONFIG['BACKGROUND_LABEL']: #FN
+                class_name = id_to_name.get(consecutive_label_to_original.get(int(gt[batch_i, k, -2])))
                 confusion_matrix_elements.append(ConfusionMatrixElement(
-                    f"class_{int(gt[batch_i, k, -2])}",
+                    f"{class_name}",
                     ConfusionMatrixValue.Positive,
                     float(0)
                 ))

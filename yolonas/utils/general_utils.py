@@ -11,6 +11,7 @@ from yolonas.config import CONFIG
 from yolonas.utils.yolo_utils import decoder
 from code_loader.helpers.detection.utils import xyxy_to_xywh_format
 from code_loader.helpers.detection.yolo.enums import YoloDecodingType
+from code_loader import leap_binder
 
 
 def get_predict_bbox_list(reg_fixed: tf.Tensor, cls: tf.Tensor) -> List[BoundingBox]:
@@ -32,6 +33,8 @@ def bb_array_to_object(bb_array: Union[NDArray[float], tf.Tensor], iscornercoded
     bb_array is (CLASSES,TOP_K,PROPERTIES) WHERE PROPERTIES =(conf,xmin,ymin,xmax,ymax)
     """
     bb_list = []
+    original_label_to_name = leap_binder.cache_container['class_id_to_name']
+    consecutive_label_to_original = CONFIG['labels_consecutive_to_original']
     if not isinstance(bb_array, np.ndarray):
         bb_array = np.array(bb_array)
     if len(bb_array.shape) == 3:
@@ -45,8 +48,9 @@ def bb_array_to_object(bb_array: Union[NDArray[float], tf.Tensor], iscornercoded
                 x, y = bb_array[i][0], bb_array[i][1]
                 w, h = bb_array[i][2], bb_array[i][3]
             conf = 1 if is_gt else bb_array[i][0]
+            label_name = original_label_to_name.get(consecutive_label_to_original.get(bb_array[i][min(5, len(bb_array[i]) - 1)]))
             curr_bb = BoundingBox(x=x, y=y, width=w, height=h, confidence=conf,
-                                  label=str(bb_array[i][min(5, len(bb_array[i]) - 1)]))  # FIXME add categories
+                                  label=str(label_name))
 
             bb_list.append(curr_bb)
     return bb_list
@@ -206,6 +210,16 @@ def extract_and_cache_bboxes(idx: int, data: Dict):
     return bboxes
 
 
+def map_class_ids(bboxes: np.ndarray) -> np.ndarray:
+    mapping_dict = CONFIG.get('labels_original_to_consecutive', None)
+    if mapping_dict is None:
+        return bboxes
+    else:
+        mapped_bboxes_ids = np.vectorize(mapping_dict.get)(bboxes[:, -1].astype(int))
+        bboxes[:, -1] = mapped_bboxes_ids
+        return bboxes
+
+
 def draw_image_with_boxes(image, bounding_boxes):
     # Create figure and axes
     fig, ax = plt.subplots(1)
@@ -270,7 +284,7 @@ def scale_loc_prediction(loc_pred: List[tf.Tensor], decoded: bool = False,
                     [tf.reshape(
                         (tf.reshape(loc[..., :2], (loc.shape[0], *feature_maps[i], -1)) + mesh) * np.array(strides[i])
                         , (loc.shape[0], feature_maps[i][0] * feature_maps[i][1], -1)),
-                     tf.exp(loc[..., 2:4]) * np.array(strides[i])], axis=2) / scale_arr
+                        tf.exp(loc[..., 2:4]) * np.array(strides[i])], axis=2) / scale_arr
     return new_loc_pred
 
 

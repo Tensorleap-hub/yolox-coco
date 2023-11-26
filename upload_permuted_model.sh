@@ -10,4 +10,5 @@ else
 	echo "Added Permute Layer to model - pushing to hub..."
 	cp mappings/leap_mapping_permuted_model.yaml leap_mapping.yaml
 	leap projects push $SAVE_PATH
+	cp mappings/leap_mapping_raw.yaml leap_mapping.yaml
 fi
