@@ -7,7 +7,7 @@ To understand the integration work that is required for that, please look at `le
 YOLO requires all labels to be consecutive, i.e. for 10 classes the model expects tha labels 0-9.
 To generate a mapping between your custom classes and consecutive ids, please run the script `generate_labels_mappping.sh`: <br>
 ```bash
-./generate_labels_mappping.sh
+./generate_labels_mapping.sh
 ```
 This script will generate a mapping file between the model logits (consecutive ids in range [0, num classes]) to classes names in the following format: <br>
 ```yaml
