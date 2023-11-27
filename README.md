@@ -3,10 +3,31 @@ The repository below is simulating integration to your local directory.
 To understand the integration work that is required for that, please look at `leap_binder.py`
 
 # Quick start
+## Class Mapping
+YOLO requires all labels to be consecutive, i.e. for 10 classes the model expects tha labels 0-9.
+To generate a mapping between your custom classes and consecutive ids, please run the script `generate_labels_mappping.sh`: <br>
+```bash
+./generate_labels_mappping.sh
+```
+This script will generate a mapping file between the model logits (consecutive ids in range [0, num classes]) to classes names in the following format: <br>
+```yaml
+{
+  "0": "person",
+  "1": "bicycle",
+  "2": "car",
+  "3": "motorcycle",
+  "4": "airplane",
+  etc.
+}
+```
+The file will be saved to `yolonas/label_id_to_name.json`
+If there is any mismatch between model logits and classes names, e.g. 'car' should be logit '1' rather than '2', <br>
+please modify the file `yolonas/label_id_to_name.json` accordingly. <br>
+## Dataset Path and Model Import
 Set the `dataset_path` value in `yolonas/object_detection_config.yaml` to your local dataset path.
 
 Simply run:
-```
+```bash
 leap project push model/yolo_nas_s_c_1.onnx
 ```
 * Please replace the model path with your model
@@ -15,7 +36,7 @@ Now, we can open http://localhost:4589 and evaluate our model.
 
 We also made another version that adds permute layers to the end of the model:
 
-```
+```bash
 ./upload_permuted_model.sh model/yolo_nas_s_c_1.onnx
 ```
 

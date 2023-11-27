@@ -3,6 +3,7 @@ from pathlib import Path
 import os
 from typing import Dict, Any
 import yaml
+from pycocotools.coco import COCO
 
 
 def load_od_config() -> Dict[str, Any]:
@@ -13,15 +14,19 @@ def load_od_config() -> Dict[str, Any]:
         config = yaml.safe_load(file)
 
     try:
-        with open(os.path.join(root, 'labels_mapping.json'), 'r') as f:
-            labels_mapping = json.load(f, object_pairs_hook=lambda pairs: {int(k): v for k, v in pairs})
-        config['BACKGROUND_LABEL'] = max(labels_mapping.keys()) + 1
-        labels_mapping[config['BACKGROUND_LABEL']] = config['BACKGROUND_LABEL']
-        config['labels_original_to_consecutive'] = labels_mapping
-        config['labels_consecutive_to_original'] = {v: k for k, v in labels_mapping.items()}
-
+        with open(os.path.join(root, 'label_id_to_name.json'), 'r') as f:
+            logit_to_name = json.load(f, object_pairs_hook=lambda pairs: {int(k): v for k, v in pairs})
+        config['class_id_to_name'] = logit_to_name
     except Exception as e:
         print(e)
+
+    coco = COCO(os.path.join(str(Path(config['dataset_path']).absolute()), config['train_file']))
+    config['labels_original_to_consecutive'] = {original_label: consecutive_label
+                                                for
+                                                consecutive_label, original_label in
+                                                enumerate(coco.cats.keys())}
+    config['BACKGROUND_LABEL'] = max(config['labels_original_to_consecutive'].keys()) + 1
+    config['labels_original_to_consecutive'][config['BACKGROUND_LABEL']] = config['BACKGROUND_LABEL']
 
     return config
 

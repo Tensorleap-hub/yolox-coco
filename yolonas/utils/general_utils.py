@@ -33,8 +33,7 @@ def bb_array_to_object(bb_array: Union[NDArray[float], tf.Tensor], iscornercoded
     bb_array is (CLASSES,TOP_K,PROPERTIES) WHERE PROPERTIES =(conf,xmin,ymin,xmax,ymax)
     """
     bb_list = []
-    original_label_to_name = leap_binder.cache_container['class_id_to_name']
-    consecutive_label_to_original = CONFIG['labels_consecutive_to_original']
+    original_label_to_name = CONFIG['class_id_to_name']
     if not isinstance(bb_array, np.ndarray):
         bb_array = np.array(bb_array)
     if len(bb_array.shape) == 3:
@@ -48,7 +47,7 @@ def bb_array_to_object(bb_array: Union[NDArray[float], tf.Tensor], iscornercoded
                 x, y = bb_array[i][0], bb_array[i][1]
                 w, h = bb_array[i][2], bb_array[i][3]
             conf = 1 if is_gt else bb_array[i][0]
-            label_name = original_label_to_name.get(consecutive_label_to_original.get(bb_array[i][min(5, len(bb_array[i]) - 1)]))
+            label_name = original_label_to_name.get(bb_array[i][min(5, len(bb_array[i]) - 1)])
             curr_bb = BoundingBox(x=x, y=y, width=w, height=h, confidence=conf,
                                   label=str(label_name))
 

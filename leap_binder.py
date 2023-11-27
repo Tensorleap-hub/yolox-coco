@@ -16,10 +16,6 @@ from yolonas.utils.general_utils import extract_and_cache_bboxes, map_class_ids
 from yolonas.visualizers import pred_bb_decoder, gt_bb_decoder
 from yolonas.utils.confusion_matrix import confusion_matrix_metric
 
-coco = COCO(os.path.join(dataset_path, CONFIG['train_file']))
-leap_binder.cache_container['class_id_to_name'] = {class_id: value['name'] for class_id, value in
-                                                   coco.cats.items()}
-
 
 # ----------------------------------------------------data processing--------------------------------------------------
 def subset_images() -> List[PreprocessResponse]:

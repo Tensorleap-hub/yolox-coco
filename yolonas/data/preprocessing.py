@@ -1,4 +1,3 @@
-import os
 from typing import Union, Tuple
 
 import numpy as np
@@ -8,8 +7,8 @@ from yolonas.config import CONFIG
 from yolonas.utils.dataclasses import RescaleMetadata, PaddingCoordinates
 
 
-
-def preprocess_image(image: Image, get_metadata: bool = False) -> Union[np.ndarray, Tuple[RescaleMetadata, PaddingCoordinates]]:
+def preprocess_image(image: Image, get_metadata: bool = False) -> Union[
+    np.ndarray, Tuple[RescaleMetadata, PaddingCoordinates]]:
     width, height = image.size
     ar = width / height
     scaling_size = CONFIG['SCALE_TO_SIZE']
