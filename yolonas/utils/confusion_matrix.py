@@ -57,5 +57,11 @@ def confusion_matrix_metric(gt, cls, reg, image):
                     ConfusionMatrixValue.Positive,
                     float(0)
                 ))
+        if all(~ gts_detected):
+            confusion_matrix_elements.append(ConfusionMatrixElement(
+                "background",
+                ConfusionMatrixValue.Positive,
+                float(0)
+            ))
         ret.append(confusion_matrix_elements)
     return ret
