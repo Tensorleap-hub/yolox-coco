@@ -9,7 +9,7 @@ from code_loader.contract.datasetclasses import PreprocessResponse
 from code_loader.contract.enums import LeapDataType
 from pycocotools.coco import COCO
 
-from yolonas.config import dataset_path, CONFIG
+from yolonas.config import dataset_path, unlabeled_dataset_path, CONFIG
 from yolonas.custom_layers import MockOneClass
 from yolonas.metrics import custom_yolo_nas_loss, placeholder_loss, general_metrics_dict, od_loss, iou_metrics_dict
 from yolonas.utils.general_utils import extract_and_cache_bboxes, map_class_ids
@@ -38,10 +38,12 @@ def subset_images() -> List[PreprocessResponse]:
     train_size = min(len(x_train_raw), CONFIG['TRAIN_SIZE'])
     val_size = min(len(x_val_raw), CONFIG['VAL_SIZE'])
     training_subset = PreprocessResponse(length=train_size, data={'cocofile': train_coco,
+                                                                  'dataset_path': dataset_path,
                                                                   'samples': x_train_raw,
                                                                   'subdir': 'train'})
 
     validation_subset = PreprocessResponse(length=val_size, data={'cocofile': val_coco,
+                                                                  'dataset_path': dataset_path,
                                                                   'samples': x_val_raw,
                                                                   'subdir': 'val'})
     return [training_subset, validation_subset]
@@ -51,7 +53,7 @@ def unlabeled_preprocessing_func() -> PreprocessResponse:
     """
     This function returns the unlabeled data split in the format expected by tensorleap
     """
-    unlabeled_coco = COCO(os.path.join(dataset_path, CONFIG['unlabeled_file']))
+    unlabeled_coco = COCO(os.path.join(unlabeled_dataset_path, CONFIG['unlabeled_file']))
     imgIds = unlabeled_coco.getImgIds()
     imgs = unlabeled_coco.loadImgs(imgIds)
     existing_images = set(unlabeled_coco.imgs.keys())
@@ -59,8 +61,9 @@ def unlabeled_preprocessing_func() -> PreprocessResponse:
 
     unlabeled_size = min(len(x_unlabeled_raw), CONFIG['UNLABELED_SIZE'])
     unlabeled_subset = PreprocessResponse(length=unlabeled_size, data={'cocofile': unlabeled_coco,
+                                                                       'dataset_path': unlabeled_dataset_path,
                                                                        'samples': x_unlabeled_raw,
-                                                                       'subdir': 'train'})
+                                                                       'subdir': 'unlabeled'})
     return unlabeled_subset
 
 
@@ -70,7 +73,7 @@ def input_image(idx: int, data: PreprocessResponse) -> np.ndarray:
     """
     data = data.data
     x = data['samples'][idx]
-    path = os.path.join(dataset_path, f"images/{x['file_name']}")
+    path = os.path.join(data['dataset_path'], f"images/{x['file_name']}")
     image = Image.open(path)
     image = image.resize((CONFIG['IMAGE_SIZE'][0], CONFIG['IMAGE_SIZE'][1]), Image.BILINEAR)
     return np.asarray(image) / 255.

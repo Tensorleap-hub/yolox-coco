@@ -35,3 +35,4 @@ def load_od_config() -> Dict[str, Any]:
 CONFIG = load_od_config()
 
 dataset_path = str(Path(CONFIG['dataset_path']).absolute())
+unlabeled_dataset_path = str(Path(CONFIG['unlabeled_dataset_path']).absolute())

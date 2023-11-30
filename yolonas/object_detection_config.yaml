@@ -1,4 +1,5 @@
 dataset_path: /home/tensorleap/tensorleap/data/coco-dataset/coco/
+unlabeled_dataset_path: /home/tensorleap/tensorleap/data/coco-dataset/coco/
 train_file: filtered_train.json
 val_file: filtered_train.json
 unlabeled_file: filtered_train.json
