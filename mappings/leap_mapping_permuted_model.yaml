@@ -35,6 +35,9 @@ decorators:
         - inputKey: bb_gt
           operation: CustomLoss
           id: '570'
+        - inputKey: bb_gt
+          operation: Metric
+          id: '581'
   - operation: Adam
     data:
       type: Optimizer
@@ -221,6 +224,33 @@ decorators:
         - inputKey: '0'
           operation: Adam
           id: '554'
+  - operation: Metric
+    data:
+      type: Metric
+      name: iou_metrics
+      metric_name: iou_metrics
+      arg_names:
+        - bb_gt
+        - reg
+        - cls
+      user_unique_name: iou_metrics
+    id: '581'
+    inputs:
+      cls:
+        - outputKey: feature_map
+          operation: Permute
+          name: permute_215
+          id: '519'
+      reg:
+        - outputKey: feature_map
+          operation: Permute
+          name: permute_214
+          id: '1'
+      bb_gt:
+        - outputKey: bbs
+          operation: GroundTruth
+          id: '553'
+    outputs: {}
 layers:
   - operation: Permute
     data:

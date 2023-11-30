@@ -11,7 +11,7 @@ from pycocotools.coco import COCO
 
 from yolonas.config import dataset_path, CONFIG
 from yolonas.custom_layers import MockOneClass
-from yolonas.metrics import custom_yolo_nas_loss, placeholder_loss, general_metrics_dict, od_loss
+from yolonas.metrics import custom_yolo_nas_loss, placeholder_loss, general_metrics_dict, od_loss, iou_metrics_dict
 from yolonas.utils.general_utils import extract_and_cache_bboxes, map_class_ids
 from yolonas.visualizers import pred_bb_decoder, gt_bb_decoder
 from yolonas.utils.confusion_matrix import confusion_matrix_metric
@@ -45,6 +45,23 @@ def subset_images() -> List[PreprocessResponse]:
                                                                   'samples': x_val_raw,
                                                                   'subdir': 'val'})
     return [training_subset, validation_subset]
+
+
+def unlabeled_preprocessing_func() -> PreprocessResponse:
+    """
+    This function returns the unlabeled data split in the format expected by tensorleap
+    """
+    unlabeled_coco = COCO(os.path.join(dataset_path, CONFIG['unlabeled_file']))
+    imgIds = unlabeled_coco.getImgIds()
+    imgs = unlabeled_coco.loadImgs(imgIds)
+    existing_images = set(unlabeled_coco.imgs.keys())
+    x_unlabeled_raw = unlabeled_coco.loadImgs(set(imgIds).intersection(existing_images))
+
+    unlabeled_size = min(len(x_unlabeled_raw), CONFIG['UNLABELED_SIZE'])
+    unlabeled_subset = PreprocessResponse(length=unlabeled_size, data={'cocofile': unlabeled_coco,
+                                                                       'samples': x_unlabeled_raw,
+                                                                       'subdir': 'train'})
+    return unlabeled_subset
 
 
 def input_image(idx: int, data: PreprocessResponse) -> np.ndarray:
@@ -140,6 +157,11 @@ def count_duplicate_bbs(bbs_gt: np.ndarray) -> int:
     return int(real_gt.shape[0] != np.unique(real_gt, axis=0).shape[0])
 
 
+def count_persons(bbs_gt: np.ndarray) -> int:
+    person_gt = bbs_gt[bbs_gt[..., 4] == CONFIG['class_name_to_id']['person']]
+    return int(person_gt.shape[0])
+
+
 def count_small_bbs(bboxes: np.ndarray) -> float:
     obj_boxes = bboxes[bboxes[..., -1] == 0]
     areas = obj_boxes[..., 2] * obj_boxes[..., 3]
@@ -164,7 +186,8 @@ def metadata_dict(idx: int, data: PreprocessResponse) -> Dict[str, Union[float, 
         "image_mean": float(img.mean()),
         "image_std": float(img.std()),
         "image_min": float(img.min()),
-        "image_max": float(img.max())
+        "image_max": float(img.max()),
+        "number_of_persons": count_persons(bbs),
         # "count_total_obj_bbox_occlusions": get_obj_bbox_occlusions_count(img, bbs),
         # "avg_obj_bbox_occlusions": get_obj_bbox_occlusions_avg(img, bbs),
     }
@@ -174,14 +197,14 @@ def metadata_dict(idx: int, data: PreprocessResponse) -> Dict[str, Union[float, 
 # ---------------------------------------------------------binding------------------------------------------------------
 # preprocess function
 leap_binder.set_preprocess(subset_images)
-
+leap_binder.set_unlabeled_data_preprocess(unlabeled_preprocessing_func)
 # unlabeled data preprocess
 # set input and gt
 leap_binder.set_input(input_image, 'images')
 leap_binder.set_ground_truth(get_bbs, 'bbs')
 # set prediction (object)
 leap_binder.add_prediction('bbox coordinates', ["x1", "y1", "x2", "y2"])
-leap_binder.add_prediction('classes', [f"class_{i}" for i in range(CONFIG['CLASSES'])])
+leap_binder.add_prediction('classes', list(CONFIG['class_id_to_name'].values()))
 # set custom loss
 leap_binder.add_custom_loss(placeholder_loss, 'zero_loss')
 leap_binder.add_custom_loss(custom_yolo_nas_loss, 'custom_yolo_nas_loss')
@@ -191,6 +214,7 @@ leap_binder.add_custom_loss(od_loss, 'od_loss')
 leap_binder.set_visualizer(gt_bb_decoder, 'bb_gt_decoder', LeapDataType.ImageWithBBox)
 leap_binder.set_visualizer(pred_bb_decoder, 'pred_bb_decoder', LeapDataType.ImageWithBBox)
 leap_binder.add_custom_metric(confusion_matrix_metric, "Confusion metric")
+leap_binder.add_custom_metric(iou_metrics_dict, 'iou_metrics')
 
 #
 leap_binder.set_custom_layer(MockOneClass, 'reduce_to_one_class')

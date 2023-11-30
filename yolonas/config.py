@@ -17,6 +17,7 @@ def load_od_config() -> Dict[str, Any]:
         with open(os.path.join(root, 'label_id_to_name.json'), 'r') as f:
             logit_to_name = json.load(f, object_pairs_hook=lambda pairs: {int(k): v for k, v in pairs})
         config['class_id_to_name'] = logit_to_name
+        config['class_name_to_id'] = {v: k for k, v in config['class_id_to_name'].items()}
     except Exception as e:
         print(e)
 

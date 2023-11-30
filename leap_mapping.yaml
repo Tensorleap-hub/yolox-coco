@@ -43,14 +43,14 @@ decorators:
       user_unique_name: bb_gt_decoder
     id: '570'
     inputs:
-      image:
-        - outputKey: images
-          operation: Input
-          id: '572'
       bb_gt:
         - outputKey: bbs
           operation: GroundTruth
           id: '571'
+      image:
+        - outputKey: images
+          operation: Input
+          id: '572'
     outputs: {}
   - operation: GroundTruth
     data:
@@ -70,6 +70,9 @@ decorators:
         - inputKey: bb_gt
           operation: Metric
           id: '578'
+        - inputKey: bb_gt
+          operation: Metric
+          id: '579'
         - inputKey: bb_gt
           operation: CustomLoss
           id: '577'
@@ -156,14 +159,14 @@ decorators:
           operation: Activation
           name: '903'
           id: '519'
-      image:
-        - outputKey: images
-          operation: Input
-          id: '572'
       gt:
         - outputKey: bbs
           operation: GroundTruth
           id: '571'
+      image:
+        - outputKey: images
+          operation: Input
+          id: '572'
     outputs: {}
   - operation: CustomLoss
     data:
@@ -206,6 +209,33 @@ decorators:
         - cls
       user_unique_name: od_metrics
     id: '578'
+    inputs:
+      reg:
+        - outputKey: merged
+          operation: TFOpLambda
+          name: tf.math.multiply_20
+          id: '2'
+      cls:
+        - outputKey: feature_map
+          operation: Activation
+          name: '903'
+          id: '519'
+      bb_gt:
+        - outputKey: bbs
+          operation: GroundTruth
+          id: '571'
+    outputs: {}
+  - operation: Metric
+    data:
+      type: Metric
+      name: iou_metrics
+      metric_name: iou_metrics
+      arg_names:
+        - bb_gt
+        - reg
+        - cls
+      user_unique_name: iou_metrics
+    id: '579'
     inputs:
       reg:
         - outputKey: merged

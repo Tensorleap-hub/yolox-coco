@@ -14,7 +14,7 @@ def confusion_matrix_metric(gt, cls, reg, image):
     # assumes we get predictions in xyxy format in gt AND reg
     # assumes gt is in xywh form
     id_to_name = CONFIG['class_id_to_name']
-    threshold = 0.5
+    threshold = CONFIG['CM_IOU_THRESH']
     reg_fixed = xyxy_to_xywh_format(reg) / image.shape[1]
     outputs = decoder(loc_data=[reg_fixed], conf_data=[cls], prior_data=[None],
                       from_logits=False, decoded=True)

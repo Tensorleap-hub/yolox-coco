@@ -102,7 +102,10 @@ def calculate_iou_all_pairs(bboxes: np.ndarray, image_size: int) -> np.ndarray:
     """
 
     # Reformat all bboxes to (x_min, y_min, x_max, y_max)
-    bboxes = np.asarray([bbox[:-1] for bbox in bboxes]) * image_size
+    if bboxes.shape[-1] == 5:
+        bboxes = np.asarray([bbox[:-1] for bbox in bboxes]) * image_size
+    elif bboxes.shape[-1] == 4:
+        bboxes *= image_size
     num_bboxes = len(bboxes)
     # Calculate coordinates for all pairs
     x_min = np.maximum(bboxes[:, 0][:, np.newaxis], bboxes[:, 0])
@@ -121,7 +124,7 @@ def calculate_iou_all_pairs(bboxes: np.ndarray, image_size: int) -> np.ndarray:
 
     # Calculate IOU for all pairs
     iou = intersection_area / union_area
-    iou = iou[np.triu_indices(num_bboxes, k=1)]
+    # iou = iou[np.triu_indices(num_bboxes, k=0)]
     return iou
 
 
@@ -185,6 +188,39 @@ def calculate_overlap(box1, box2):
     overlap_area = w_intersection * h_intersection
 
     return overlap_area
+
+
+def calculate_iou_batch(boxes1, boxes2):
+    # Calculate intersection and union areas
+    intersection_x = np.maximum(0, np.minimum(boxes1[:, :, 0] + boxes1[:, :, 2],
+                                              boxes2[:, :, 0] + boxes2[:, :, 2]) - np.maximum(boxes1[:, :, 0],
+                                                                                              boxes2[:, :, 0]))
+    intersection_y = np.maximum(0, np.minimum(boxes1[:, :, 1] + boxes1[:, :, 3],
+                                              boxes2[:, :, 1] + boxes2[:, :, 3]) - np.maximum(boxes1[:, :, 1],
+                                                                                              boxes2[:, :, 1]))
+
+    intersection_area = intersection_x * intersection_y
+    union_area = (boxes1[:, :, 2] * boxes1[:, :, 3]) + (boxes2[:, :, 2] * boxes2[:, :, 3]) - intersection_area
+
+    # Calculate IoU
+    iou = intersection_area / np.maximum(union_area, 1e-10)
+    return iou
+
+
+def pad_bboxes_to_same_length(array1, array2):
+    n1 = array1.shape[1]
+    n2 = array2.shape[1]
+
+    if n1 < n2:
+        padded_array1 = np.pad(array1, ((0, 0), (0, n2 - n1), (0, 0)), mode='constant', constant_values=0)
+        padded_array1[:, n1:n2, -1] = CONFIG['BACKGROUND_LABEL']
+        return padded_array1, array2
+    elif n2 < n1:
+        padded_array2 = np.pad(array2, ((0, 0), (0, n1 - n2), (0, 0)), mode='constant', constant_values=0)
+        padded_array2[:, n2:n1, -1] = CONFIG['BACKGROUND_LABEL']
+        return array1, padded_array2
+    else:
+        return array1, array2
 
 
 def extract_and_cache_bboxes(idx: int, data: Dict):

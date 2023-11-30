@@ -2,10 +2,11 @@ from typing import Union, List, Tuple, Dict
 
 import tensorflow as tf
 import numpy as np
-from code_loader.helpers.detection.utils import xyxy_to_xywh_format
+from code_loader.helpers.detection.utils import xyxy_to_xywh_format, jaccard, xywh_to_xyxy_format
 
 from yolonas.config import CONFIG
-from yolonas.utils.general_utils import reshape_output_list
+from yolonas.utils.general_utils import reshape_output_list, calculate_iou_batch, pad_bboxes_to_same_length, \
+    calculate_iou_all_pairs
 from yolonas.utils.yolo_utils import decoder, LOSS_FN
 
 
@@ -61,6 +62,45 @@ def general_metrics_dict(bb_gt: tf.Tensor, reg: tf.Tensor, cls: tf.Tensor) -> Di
         "Objectness_metric": tf.reduce_sum(obj_met, axis=0)[:, 0],
     }
     return res
+
+
+def iou_metrics_dict(bb_gt: tf.Tensor, reg: tf.Tensor, cls: tf.Tensor) -> Dict[str, tf.Tensor]:
+    id_to_name = CONFIG['class_id_to_name']
+    threshold = CONFIG['CM_IOU_THRESH']
+    reg_fixed = xyxy_to_xywh_format(reg) / CONFIG['IMAGE_SIZE'][0]
+    outputs = decoder(loc_data=[reg_fixed], conf_data=[cls], prior_data=[None],
+                      from_logits=False, decoded=True)
+    batch_res = {f"{name}_mean_iou": [] for name in id_to_name.values()}
+    batch_res['mean_all_iou'] = []
+    for batch_i in range(len(outputs)):
+        sample_res = {name: [] for name in id_to_name.values()}
+        if len(outputs[batch_i]) != 0:
+            ious = jaccard(outputs[batch_i][:, 1:5],
+                           xywh_to_xyxy_format(
+                               tf.cast(bb_gt[batch_i, :, :-1], tf.double))).numpy()  # (#bb_predicted,#gt)
+            prediction_detected = np.any((ious > threshold), axis=1)
+            max_iou_ind = np.argmax(ious, axis=1)
+            max_iou = np.max(ious, axis=1)
+            for i, prediction in enumerate(prediction_detected):
+                gt_idx = int(bb_gt[batch_i, max_iou_ind[i], 4])
+                class_name = id_to_name.get(gt_idx)
+
+                if prediction:
+                    sample_res[class_name].append(max_iou[i])
+        for class_name in sample_res.keys():
+            if np.isnan(np.mean(sample_res[class_name])):
+                batch_res[f"{class_name}_mean_iou"].append(0)
+            else:
+                batch_res[f"{class_name}_mean_iou"].append(np.mean(sample_res[class_name]))
+        all_ious = [np.mean(sample_res[class_name]) for class_name in sample_res.keys() if
+                    len(sample_res[class_name]) > 0]
+        if len(all_ious) > 0:
+            batch_res['mean_all_iou'].append(
+                np.mean([np.mean(sample_res[class_name]) for class_name in sample_res.keys() if
+                         len(sample_res[class_name]) > 0]))
+        else:
+            batch_res['mean_all_iou'].append(0.0)
+    return {k: tf.convert_to_tensor(v) for k, v in batch_res.items()}
 
 
 def custom_yolo_nas_loss(y_true, reg: tf.Tensor, cls: tf.Tensor):
