@@ -1,14 +1,12 @@
 dataset_path: /home/tensorleap/tensorleap/data/coco-dataset/coco/
-unlabeled_dataset_path: /home/tensorleap/tensorleap/data/coco-dataset/coco/
+unlabeled_dataset_path: /home/tensorleap/tensorleap/data/coco-dataset/coco/images/
 train_file: filtered_train.json
 val_file: filtered_train.json
-unlabeled_file: filtered_train.json
 
 
 TRAIN_SIZE: 64
 VAL_SIZE: 64
 TEST_SIZE: 8
-UNLABELED_SIZE: 64
 
 BACKGROUND_LABEL: 81
 CLASSES: 80
