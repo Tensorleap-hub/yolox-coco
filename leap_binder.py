@@ -177,7 +177,7 @@ def metadata_dict(idx: int, data: PreprocessResponse) -> Dict[str, Union[float, 
 
     bbs = get_bbs(idx, data)
     img = input_image(idx, data)
-    
+
     metadatas = {
         "idx": idx,
         "fname": get_fname(idx, data),
@@ -203,7 +203,7 @@ def metadata_dict(idx: int, data: PreprocessResponse) -> Dict[str, Union[float, 
 # ---------------------------------------------------------binding------------------------------------------------------
 # preprocess function
 leap_binder.set_preprocess(subset_images)
-leap_binder.set_unlabeled_data_preprocess(unlabeled_preprocessing_func)
+# leap_binder.set_unlabeled_data_preprocess(unlabeled_preprocessing_func)
 # unlabeled data preprocess
 # set input and gt
 leap_binder.set_input(input_image, 'images')
