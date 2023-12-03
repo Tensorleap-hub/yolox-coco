@@ -88,10 +88,11 @@ def iou_metrics_dict(bb_gt: tf.Tensor, reg: tf.Tensor, cls: tf.Tensor) -> Dict[s
                 if prediction:
                     sample_res[class_name].append(max_iou[i])
         for class_name in sample_res.keys():
-            if np.isnan(np.mean(sample_res[class_name])):
-                batch_res[f"{class_name}_mean_iou"].append(0)
+            if len(sample_res[class_name]) > 0:
+                class_mean = np.mean(sample_res[class_name])
+                batch_res[f"{class_name}_mean_iou"].append(class_mean)
             else:
-                batch_res[f"{class_name}_mean_iou"].append(np.mean(sample_res[class_name]))
+                batch_res[f"{class_name}_mean_iou"].append(0.0)
         all_ious = [np.mean(sample_res[class_name]) for class_name in sample_res.keys() if
                     len(sample_res[class_name]) > 0]
         if len(all_ious) > 0:

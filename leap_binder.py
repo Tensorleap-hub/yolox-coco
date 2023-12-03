@@ -1,4 +1,5 @@
 import os
+import sys
 from typing import List, Dict, Union
 import numpy as np
 from PIL import Image
@@ -53,7 +54,7 @@ def unlabeled_preprocessing_func() -> PreprocessResponse:
     """
     This function returns the unlabeled data split in the format expected by tensorleap
     """
-    unlable_files = os.listdir(unlabeled_dataset_path)
+    unlable_files = os.listdir(unlabeled_dataset_path)[:CONFIG['TEST_SIZE']]
     unlabeled_size = len(unlable_files)
     print(unlabeled_size)
     unlabeled_subset = PreprocessResponse(length=unlabeled_size, data={'unlable_files': unlable_files,
@@ -67,8 +68,7 @@ def input_image(idx: int, data: PreprocessResponse) -> np.ndarray:
     Returns a BGR image normalized and padded
     """
     data = data.data
-    if  data['subdir']=='unlabeled':
-        x = data['unlable_files'][idx]
+    if data['subdir'] == 'unlabeled':
         path = os.path.join(data['dataset_path'], data['unlable_files'][idx])
     else:
         x = data['samples'][idx]
@@ -171,13 +171,29 @@ def count_small_bbs(bboxes: np.ndarray) -> float:
 
 
 def metadata_dict(idx: int, data: PreprocessResponse) -> Dict[str, Union[float, int, str]]:
-    if  data.data['subdir']=='unlabeled':
-        metadatas = {"idx": idx, "fname": data.data["unlable_files"][idx]}
+    img = input_image(idx, data)
+
+    if data.data['subdir'] == 'unlabeled':
+        metadatas = {
+            "idx": idx,
+            "fname": data.data["unlable_files"][idx],
+            "origin_width": 0,
+            "origin_height": 0,
+            "instances_number": 0,
+            "bbox_number": 0,
+            "bbox_area": 0,
+            "bbox_aspect_ratio": 0,
+            "duplicate_bb": 0,
+            "small_bbs_number": 0,
+            "image_mean": float(img.mean()),
+            "image_std": float(img.std()),
+            "image_min": float(img.min()),
+            "image_max": float(img.max()),
+            "number_of_persons": 0,
+        }
         return metadatas
 
     bbs = get_bbs(idx, data)
-    img = input_image(idx, data)
-
     metadatas = {
         "idx": idx,
         "fname": get_fname(idx, data),
@@ -203,7 +219,7 @@ def metadata_dict(idx: int, data: PreprocessResponse) -> Dict[str, Union[float, 
 # ---------------------------------------------------------binding------------------------------------------------------
 # preprocess function
 leap_binder.set_preprocess(subset_images)
-# leap_binder.set_unlabeled_data_preprocess(unlabeled_preprocessing_func)
+leap_binder.set_unlabeled_data_preprocess(unlabeled_preprocessing_func)
 # unlabeled data preprocess
 # set input and gt
 leap_binder.set_input(input_image, 'images')
