@@ -54,7 +54,7 @@ def unlabeled_preprocessing_func() -> PreprocessResponse:
     """
     This function returns the unlabeled data split in the format expected by tensorleap
     """
-    unlable_files = os.listdir(unlabeled_dataset_path)[:CONFIG['TEST_SIZE']]
+    unlable_files = os.listdir(unlabeled_dataset_path)
     unlabeled_size = len(unlable_files)
     print(unlabeled_size)
     unlabeled_subset = PreprocessResponse(length=unlabeled_size, data={'unlable_files': unlable_files,
