@@ -7,8 +7,8 @@ from code_loader.contract.responsedataclasses import BoundingBox
 from matplotlib import patches
 import matplotlib.pyplot as plt
 from numpy._typing import NDArray
-from yolonas.config import CONFIG
-from yolonas.utils.yolo_utils import decoder
+from yolox.config import CONFIG
+from yolox.utils.yolo_utils import decoder
 from code_loader.helpers.detection.utils import xyxy_to_xywh_format
 from code_loader.helpers.detection.yolo.enums import YoloDecodingType
 from code_loader import leap_binder

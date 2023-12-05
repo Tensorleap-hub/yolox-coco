@@ -4,10 +4,10 @@ import tensorflow as tf
 import numpy as np
 from code_loader.helpers.detection.utils import xyxy_to_xywh_format, jaccard, xywh_to_xyxy_format
 
-from yolonas.config import CONFIG
-from yolonas.utils.general_utils import reshape_output_list, calculate_iou_batch, pad_bboxes_to_same_length, \
+from yolox.config import CONFIG
+from yolox.utils.general_utils import reshape_output_list, calculate_iou_batch, pad_bboxes_to_same_length, \
     calculate_iou_all_pairs
-from yolonas.utils.yolo_utils import decoder, LOSS_FN
+from yolox.utils.yolo_utils import decoder, LOSS_FN
 
 
 def compute_losses(obj_true: tf.Tensor, reg: tf.Tensor, cls: tf.Tensor) -> Union[

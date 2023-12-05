@@ -3,8 +3,8 @@ from typing import Union, Tuple
 import numpy as np
 from PIL import Image, ImageOps
 
-from yolonas.config import CONFIG
-from yolonas.utils.dataclasses import RescaleMetadata, PaddingCoordinates
+from yolox.config import CONFIG
+from yolox.utils.dataclasses import RescaleMetadata, PaddingCoordinates
 
 
 def preprocess_image(image: Image, get_metadata: bool = False) -> Union[

@@ -10,12 +10,12 @@ from code_loader.contract.datasetclasses import PreprocessResponse
 from code_loader.contract.enums import LeapDataType
 from pycocotools.coco import COCO
 
-from yolonas.config import dataset_path, unlabeled_dataset_path, CONFIG
-from yolonas.custom_layers import MockOneClass
-from yolonas.metrics import custom_yolo_nas_loss, placeholder_loss, general_metrics_dict, od_loss, iou_metrics_dict
-from yolonas.utils.general_utils import extract_and_cache_bboxes, map_class_ids
-from yolonas.visualizers import pred_bb_decoder, gt_bb_decoder
-from yolonas.utils.confusion_matrix import confusion_matrix_metric
+from yolox.config import dataset_path, unlabeled_dataset_path, CONFIG
+from yolox.custom_layers import MockOneClass
+from yolox.metrics import custom_yolo_nas_loss, placeholder_loss, general_metrics_dict, od_loss, iou_metrics_dict
+from yolox.utils.general_utils import extract_and_cache_bboxes, map_class_ids
+from yolox.visualizers import pred_bb_decoder, gt_bb_decoder
+from yolox.utils.confusion_matrix import confusion_matrix_metric
 
 
 # ----------------------------------------------------data processing--------------------------------------------------

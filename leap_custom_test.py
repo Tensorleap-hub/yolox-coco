@@ -2,13 +2,13 @@ import tensorflow as tf
 from leap_binder import (
     subset_images, input_image, get_bbs, confusion_matrix_metric, metadata_dict, unlabeled_preprocessing_func
 )
-from yolonas.metrics import od_loss, iou_metrics_dict
-from yolonas.utils.general_utils import draw_image_with_boxes
-from yolonas.visualizers import pred_bb_decoder, gt_bb_decoder
+from yolox.metrics import od_loss, iou_metrics_dict
+from yolox.utils.general_utils import draw_image_with_boxes
+from yolox.visualizers import pred_bb_decoder, gt_bb_decoder
 
 
 def check_integration():
-    model_path = 'model/yolo_nas_s_permuted_output.h5'
+    model_path = 'model/yolox_s.h5'
     model = tf.keras.models.load_model(model_path)
     batch = 4
     responses = subset_images()  # get dataset splits
@@ -29,10 +29,10 @@ def check_integration():
         y_true_bbs = tf.convert_to_tensor(bbs_gt)  # convert ground truth bbs to tensor
 
         input_img_tf = tf.convert_to_tensor(images)
-        reg, cls = model([input_img_tf])  # infer and get model prediction
-        # loss = od_loss(y_true_bbs, reg, cls)
-        iou_metrics = iou_metrics_dict(y_true_bbs, reg, cls)
-        conf_mat = confusion_matrix_metric(y_true_bbs, cls, reg, input_img_tf)
+        output = model([input_img_tf])  # infer and get model prediction
+        loss = od_loss(y_true_bbs, output)
+        # iou_metrics = iou_metrics_dict(y_true_bbs, reg, cls)
+        # conf_mat = confusion_matrix_metric(y_true_bbs, cls, reg, input_img_tf)
 
         # pred_bb_vis = pred_bb_decoder(image, reg[0, ...], cls[0, ...])
         # draw_image_with_boxes(pred_bb_vis.data / 255., pred_bb_vis.bounding_boxes)

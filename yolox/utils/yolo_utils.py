@@ -1,5 +1,5 @@
-from yolonas.config import CONFIG
-from yolonas.utils.decoder import Decoder
+from yolox.config import CONFIG
+from yolox.utils.decoder import Decoder
 import numpy as np
 from code_loader.helpers.detection.yolo.loss import YoloLoss
 from code_loader.helpers.detection.yolo.grid import Grid

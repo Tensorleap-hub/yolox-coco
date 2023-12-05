@@ -28,20 +28,13 @@ Set the `dataset_path` value in `yolonas/object_detection_config.yaml` to your l
 
 Simply run:
 ```bash
-leap project push model/yolo_nas_s_c_1.onnx
+leap project push model/yolox_s.onnx
 ```
 * Please replace the model path with your model
 
 Now, we can open http://localhost:4589 and evaluate our model.
 
-We also made another version that adds permute layers to the end of the model:
 
-```bash
-./upload_permuted_model.sh model/yolo_nas_s_c_1.onnx
-```
-
-* This option is preferable if the model layer name is different since the `leap_mapping.yaml` file won't find the layers it expects.
-* Please replace the model path with your model
 
 
 ## Prerequisites

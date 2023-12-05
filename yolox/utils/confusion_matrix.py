@@ -2,12 +2,12 @@ from code_loader.helpers.detection.utils import xyxy_to_xywh_format
 from code_loader.helpers.detection.yolo.utils import jaccard, xywh_to_xyxy_format
 
 from code_loader import leap_binder
-from yolonas.utils.yolo_utils import decoder
+from yolox.utils.yolo_utils import decoder
 from code_loader.contract.datasetclasses import ConfusionMatrixElement
 from code_loader.contract.enums import ConfusionMatrixValue
 import tensorflow as tf
 import numpy as np
-from yolonas.config import CONFIG
+from yolox.config import CONFIG
 
 
 def confusion_matrix_metric(gt, cls, reg, image):

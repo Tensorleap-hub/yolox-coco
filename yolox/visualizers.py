@@ -5,8 +5,8 @@ from code_loader.contract.responsedataclasses import BoundingBox
 from code_loader.contract.visualizer_classes import LeapImageWithBBox
 from code_loader.helpers.detection.utils import xyxy_to_xywh_format
 
-from yolonas.config import CONFIG
-from yolonas.utils.general_utils import bb_array_to_object, get_predict_bbox_list
+from yolox.config import CONFIG
+from yolox.utils.general_utils import bb_array_to_object, get_predict_bbox_list
 
 
 # Visualizers
