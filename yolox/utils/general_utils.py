@@ -227,7 +227,7 @@ def extract_and_cache_bboxes(idx: int, data: Dict):
     coco = data['cocofile']
     ann_ids = coco.getAnnIds(imgIds=x['id'])
     anns = coco.loadAnns(ann_ids)
-    bboxes = np.zeros([CONFIG['MAX_BB_PER_IMAGE'], 5])
+    bboxes = np.zeros([CONFIG['MAX_BB_PER_IMAGE'], 5], dtype=np.float32)
     max_anns = min(CONFIG['MAX_BB_PER_IMAGE'], len(anns))
     for i in range(max_anns):
         ann = anns[i]
