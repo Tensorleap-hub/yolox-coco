@@ -7,7 +7,7 @@ from code_loader.helpers.detection.utils import xyxy_to_xywh_format
 
 from yolox.config import CONFIG
 from yolox.utils.general_utils import bb_array_to_object
-
+from yolox.utils.yolox_loss import decode_outputs
 
 # Visualizers
 # def pred_bb_decoder(image: np.ndarray, reg: tf.Tensor, cls: tf.Tensor) -> LeapImageWithBBox:
@@ -21,23 +21,24 @@ from yolox.utils.general_utils import bb_array_to_object
 
 def pred_bb_visualizer(image: np.ndarray, y_pred: tf.Tensor) -> LeapImageWithBBox:
     bboxes = []
-    for bbox in y_pred:
-        only_bbox = bbox[:4]
-        x, y = (only_bbox[0] + only_bbox[2]) / 2, (only_bbox[1] + only_bbox[3]) / 2
-        w, h = np.abs(only_bbox[2] - only_bbox[0]), np.abs(only_bbox[3] - only_bbox[1])
-        confidence = bbox[4] * np.max(bbox[5:])
+    decoded_output = decode_outputs(y_pred[None, ...])[0].numpy()
+    xywh = decoded_output[..., :4]
+    xywh /= [*CONFIG['IMAGE_SIZE'][::-1], *CONFIG['IMAGE_SIZE'][::-1]]    # in absolute units
+    for i in range(len(xywh)):
+        confidence = decoded_output[i, 4] * np.max(decoded_output[i, 5:])
         if confidence < CONFIG['CONF_THRESH']:
             continue
+        bbox = xywh[i]
         bboxes.append(
             BoundingBox(
-                x=x,
-                y=y,
-                width=w,
-                height=h,
+                x=bbox[0],
+                y=bbox[1],
+                width=bbox[2],
+                height=bbox[3],
                 confidence=confidence,
                 label=''
             ))
-    return LeapImageWithBBox((image * 255).astype(np.float32), bboxes)
+    return LeapImageWithBBox((image).astype(np.uint8), bboxes)
 
 
 def gt_bb_decoder(image: np.ndarray, bb_gt: np.ndarray) -> LeapImageWithBBox:
