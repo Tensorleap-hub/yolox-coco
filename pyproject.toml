@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "yolo-nas-coco"
+name = "yolox"
 version = "0.1.0"
 description = ""
 authors = ["ranhomri <ran.homri@tensorleap.ai>"]
