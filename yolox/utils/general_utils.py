@@ -8,22 +8,21 @@ from matplotlib import patches
 import matplotlib.pyplot as plt
 from numpy._typing import NDArray
 from yolox.config import CONFIG
-from yolox.utils.yolo_utils import decoder
 from code_loader.helpers.detection.utils import xyxy_to_xywh_format
 from code_loader.helpers.detection.yolo.enums import YoloDecodingType
 from code_loader import leap_binder
 
 
-def get_predict_bbox_list(reg_fixed: tf.Tensor, cls: tf.Tensor) -> List[BoundingBox]:
-    """
-    Description: This function takes a TensorFlow tensor data as input and returns a list of bounding boxes representing predicted annotations.
-    Input: data (tf.Tensor): A TensorFlow tensor representing the output data.
-    Output: bb_object (List[BoundingBox]): A list of bounding box objects representing the predicted annotations.
-    """
-    outputs = decoder(loc_data=[np.expand_dims(reg_fixed, 0)], conf_data=[np.expand_dims(cls, 0)], prior_data=[None],
-                      from_logits=False, decoded=True)
-    bb_object = bb_array_to_object(outputs[0], iscornercoded=True, bg_label=CONFIG['BACKGROUND_LABEL'])
-    return bb_object
+# def get_predict_bbox_list(reg_fixed: tf.Tensor, cls: tf.Tensor) -> List[BoundingBox]:
+#     """
+#     Description: This function takes a TensorFlow tensor data as input and returns a list of bounding boxes representing predicted annotations.
+#     Input: data (tf.Tensor): A TensorFlow tensor representing the output data.
+#     Output: bb_object (List[BoundingBox]): A list of bounding box objects representing the predicted annotations.
+#     """
+#     outputs = decoder(loc_data=[np.expand_dims(reg_fixed, 0)], conf_data=[np.expand_dims(cls, 0)], prior_data=[None],
+#                       from_logits=False, decoded=True)
+#     bb_object = bb_array_to_object(outputs[0], iscornercoded=True, bg_label=CONFIG['BACKGROUND_LABEL'])
+#     return bb_object
 
 
 def bb_array_to_object(bb_array: Union[NDArray[float], tf.Tensor], iscornercoded: bool = True, bg_label: int = 0,

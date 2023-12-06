@@ -1,0 +1,12 @@
+codeIntegrationId: 656f212789da0b001249e74b
+projectId: 656f211e89da0b001249e747
+secretId: 
+entryFile: 'leap_binder.py'
+include:
+  - leap_binder.py
+  - leap_custom_test.py
+  - yolox/*.py
+  - yolox/label_id_to_name.json
+  - yolox/object_detection_config.yaml
+  - yolox/utils/*.py
+  - yolox/data/*.py

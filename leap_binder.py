@@ -12,10 +12,12 @@ from pycocotools.coco import COCO
 
 from yolox.config import dataset_path, unlabeled_dataset_path, CONFIG
 from yolox.custom_layers import MockOneClass
-from yolox.metrics import custom_yolo_nas_loss, placeholder_loss, general_metrics_dict, od_loss, iou_metrics_dict
+from yolox.metrics import placeholder_loss, custom_yolox_loss, od_metrics_dict
 from yolox.utils.general_utils import extract_and_cache_bboxes, map_class_ids
-from yolox.visualizers import pred_bb_decoder, gt_bb_decoder
-from yolox.utils.confusion_matrix import confusion_matrix_metric
+from yolox.visualizers import gt_bb_decoder, pred_bb_visualizer
+
+
+# from yolox.utils.confusion_matrix import confusion_matrix_metric
 
 
 # ----------------------------------------------------data processing--------------------------------------------------
@@ -229,20 +231,14 @@ leap_binder.add_prediction('bbox coordinates', ["x1", "y1", "x2", "y2"])
 leap_binder.add_prediction('classes', list(CONFIG['class_id_to_name'].values()))
 # set custom loss
 leap_binder.add_custom_loss(placeholder_loss, 'zero_loss')
-leap_binder.add_custom_loss(custom_yolo_nas_loss, 'custom_yolo_nas_loss')
-leap_binder.add_custom_loss(od_loss, 'od_loss')
-
+leap_binder.add_custom_loss(custom_yolox_loss, 'custom_yolox_loss')
 # set visualizers
-leap_binder.set_visualizer(gt_bb_decoder, 'bb_gt_decoder', LeapDataType.ImageWithBBox)
-leap_binder.set_visualizer(pred_bb_decoder, 'pred_bb_decoder', LeapDataType.ImageWithBBox)
-leap_binder.add_custom_metric(confusion_matrix_metric, "Confusion metric")
-leap_binder.add_custom_metric(iou_metrics_dict, 'iou_metrics')
-
-#
-leap_binder.set_custom_layer(MockOneClass, 'reduce_to_one_class')
+leap_binder.set_visualizer(gt_bb_decoder, 'gt_bb_visualizer', LeapDataType.ImageWithBBox)
+leap_binder.set_visualizer(pred_bb_visualizer, 'pred_bb_visualizer', LeapDataType.ImageWithBBox)
+# leap_binder.add_custom_metric(confusion_matrix_metric, "Confusion metric")
 # set metadata
 leap_binder.set_metadata(metadata_dict, name='metadata')
-# metric
-leap_binder.add_custom_metric(general_metrics_dict, 'od_metrics')
+# custom metrics
+leap_binder.add_custom_metric(od_metrics_dict, 'od_metrics')
 if __name__ == '__main__':
     leap_binder.check()
