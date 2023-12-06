@@ -1,15 +1,16 @@
-dataset_path: /Users/ranhomri/tensorleap/data/coco-2017/
-unlabeled_dataset_path: /Users/ranhomri/tensorleap/data/coco-2017/images/
+dataset_path: /home/tomtensor/Work/Projects/datasets/coco/
+unlabeled_dataset_path: /home/tomtensor/Work/Projects/datasets/coco/images/
 train_file: train.json
 val_file: val.json
 
 
 TRAIN_SIZE: 8
 VAL_SIZE: 8
+LOSS_IOU_TH: 0.3
 
 BACKGROUND_LABEL: 81
 CLASSES: 80
-CONF_THRESH: 0.35
+CONF_THRESH: 0.25
 CM_IOU_THRESH: 0.25
 TOP_K: 300
 IMAGE_SIZE: [640, 640]
