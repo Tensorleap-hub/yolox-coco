@@ -4,7 +4,7 @@ from code_loader.helpers.detection.utils import xywh_to_xyxy_format
 from yolox.config import CONFIG
 
 from yolox.utils.yolo_utils import run_single_scale
-
+from yolox.utils.yolox_loss import get_od_losses
 
 def compute_losses(y_true: tf.Tensor, y_pred: tf.Tensor):
     batch = y_true.shape[0]
@@ -60,10 +60,7 @@ def custom_yolox_loss(y_true: tf.Tensor, y_pred: tf.Tensor):
 
 
 def od_metrics_dict(y_true: tf.Tensor, y_pred: tf.Tensor):
-    y_true = tf.cast(y_true, tf.float32)
-    y_true_bboxes = xywh_to_xyxy_format(y_true[:, :, :4])
-    y_true = tf.concat([y_true_bboxes, y_true[..., -2:-1]], axis=-1)
-    reg_loss, cls_loss, conf_loss = compute_losses(y_true, y_pred)
+    reg_loss, cls_loss, conf_loss = get_od_losses(y_true, y_pred)
     return {'regression_loss': reg_loss,
             'classification_loss': cls_loss,
             'objectness_loss': conf_loss}
