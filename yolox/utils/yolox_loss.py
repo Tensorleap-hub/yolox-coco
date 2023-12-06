@@ -37,6 +37,32 @@ def calculate_iou(grid_size: int, bbox_gt: tf.Tensor) -> tf.Tensor:
     return iou
 
 
+def decode_outputs(pred):
+    pred = tf.transpose(pred, (0, 2, 1))  # [batch, n_anchors, n_classes+5]
+    grids = []
+    strides = []
+    for (hsize, wsize), stride in zip(CONFIG['FEATURE_MAPS'], CONFIG['STRIDES']):
+        xv, yv = tf.meshgrid(tf.range(wsize), tf.range(hsize))  # Corrected order of ranges
+        grid = tf.stack((xv, yv), 2)
+        grid = tf.reshape(grid, (1, -1, 2))
+        grids.append(grid)
+        shape = grid.shape[:2]
+        strides.append(tf.fill((shape[0], shape[1], 1), stride))
+
+    grids = tf.concat(grids, axis=1)
+    grids = tf.cast(grids, tf.float32)
+    strides = tf.concat(strides, axis=1)
+    strides = tf.cast(strides, tf.float32)
+
+    decoded_outputs = tf.concat([
+        (pred[..., 0:2] + grids) * strides,  # x, y
+        tf.exp(pred[..., 2:4]) * strides,  # w, h
+        pred[..., 4:]  # conf + classes
+    ], axis=-1)
+
+    return decoded_outputs
+
+
 def gather_positive_examples(pred_grids: tf.Tensor, bbox_gt: tf.Tensor):
     iou = calculate_iou(pred_grids.shape[-1], bbox_gt)
 
@@ -101,9 +127,9 @@ def simple_od_loss(y_true: tf.Tensor, y_pred: tf.Tensor):
     pred_scale_40_40 = tf.reshape(pred_scale_40_40, [1, CONFIG['CLASSES'] + 5, 40, 40])
     pred_scale_20_20 = tf.reshape(pred_scale_20_20, [1, CONFIG['CLASSES'] + 5, 20, 20])
 
-    y_true = tf.cast(y_true, tf.float32)
-    y_true_bboxes = xywh_to_xyxy_format(y_true[:, :, :4])
-    y_true = tf.concat([y_true_bboxes, y_true[..., -2:-1]], axis=-1)
+    decoded_preds = decode_outputs(y_pred)  # in absolute units
+    bboxes = decoded_preds[:, :, :4]
+
 
     true_classes_80_80, reg_loss_80_80, true_confidences_80_80 = run_single_scale(pred_scale_80_80, y_true)
     true_classes_40_40, reg_loss_40_40, true_confidences_40_40 = run_single_scale(pred_scale_40_40, y_true)
