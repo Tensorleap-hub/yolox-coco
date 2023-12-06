@@ -77,7 +77,7 @@ def input_image(idx: int, data: PreprocessResponse) -> np.ndarray:
         path = os.path.join(data['dataset_path'], f"images/{x['file_name']}")
     image = Image.open(path)
     image = image.resize((CONFIG['IMAGE_SIZE'][0], CONFIG['IMAGE_SIZE'][1]), Image.BILINEAR)
-    return np.asarray(image) / 255.
+    return np.asarray(image)
 
 
 def get_annotation_coco(idx: int, data: PreprocessResponse) -> np.ndarray:
