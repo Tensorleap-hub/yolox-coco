@@ -1,8 +1,6 @@
-import numpy as np
 import tensorflow as tf
 from code_loader.helpers.detection.utils import xywh_to_xyxy_format
 from code_loader.helpers.detection.utils import jaccard
-from numpy._typing import NDArray
 
 from yolox.config import CONFIG
 
@@ -87,13 +85,3 @@ def get_od_losses(y_true: tf.Tensor, y_pred: tf.Tensor):
     class_loss = tf.stack(class_loss_list, axis=0)
     reg_loss_list = tf.stack(reg_loss_list, axis=0)
     return conf_loss, class_loss, reg_loss_list
-
-
-def nms(self, np_selection: NDArray[np.float32]) -> tf.Tensor:
-    boxes = np_selection[:, 1:5]
-    scores = np_selection[:, 0]
-    selected_indices = tf.image.non_max_suppression(boxes=boxes,
-                                                    scores=scores,
-                                                    max_output_size=self.top_k,
-                                                    iou_threshold=self.nms_thresh)
-    return selected_indices

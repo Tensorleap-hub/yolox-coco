@@ -3,6 +3,7 @@ from leap_binder import (
     subset_images, input_image, get_bbs, metadata_dict, unlabeled_preprocessing_func
 )
 from yolox.metrics import od_metrics_dict
+from yolox.utils.confusion_matrix import confusion_matrix_metric
 from yolox.utils.general_utils import draw_image_with_boxes
 from yolox.visualizers import gt_bb_decoder, pred_bb_visualizer
 from yolox.utils.yolox_loss import simple_od_loss
@@ -12,7 +13,7 @@ import numpy as np
 def check_integration():
     model_path = 'model/yolox_s.h5'
     model = tf.keras.models.load_model(model_path)
-    batch = 4
+    batch = 8
     responses = subset_images()  # get dataset splits
     training_response = responses[1]
     unlabeled_response = unlabeled_preprocessing_func()
@@ -36,13 +37,14 @@ def check_integration():
     od_metrics = od_metrics_dict(y_true_bbs, y_pred)
 
     # iou_metrics = iou_metrics_dict(y_true_bbs, reg, cls)
-    # conf_mat = confusion_matrix_metric(y_true_bbs, cls, reg, input_img_tf)
+    conf_mat = confusion_matrix_metric(y_true_bbs, y_pred)
 
-    i = 0
-    pred_bb_vis = pred_bb_visualizer(images[i], y_pred[i, ...].numpy())
-    draw_image_with_boxes(pred_bb_vis.data, pred_bb_vis.bounding_boxes)
-    gt_bb_vis = gt_bb_decoder(images[i], bbs_gt[i])
-    draw_image_with_boxes(gt_bb_vis.data, gt_bb_vis.bounding_boxes)
+    for i in range(batch):
+        pred_bb_vis = pred_bb_visualizer(images[i], y_pred[i, ...].numpy())
+        draw_image_with_boxes(pred_bb_vis.data, pred_bb_vis.bounding_boxes)
+    for i in range(batch):
+        gt_bb_vis = gt_bb_decoder(images[i], bbs_gt[i])
+        draw_image_with_boxes(gt_bb_vis.data, gt_bb_vis.bounding_boxes)
 
 
 if __name__ == '__main__':

@@ -78,10 +78,7 @@ def input_image(idx: int, data: PreprocessResponse) -> np.ndarray:
     image = Image.open(path)
     image = image.resize((CONFIG['IMAGE_SIZE'][0], CONFIG['IMAGE_SIZE'][1]), Image.BILINEAR)
     image_array = np.asarray(image)
-    mean = np.mean(image_array, axis=(0, 1))
-    std = np.std(image_array, axis=(0, 1))
-    normalized_image = (image_array - mean) / std
-    return normalized_image
+    return image_array
 
 
 def get_annotation_coco(idx: int, data: PreprocessResponse) -> np.ndarray:
