@@ -11,9 +11,9 @@ from code_loader.contract.enums import LeapDataType
 from pycocotools.coco import COCO
 
 from yolox.config import dataset_path, unlabeled_dataset_path, CONFIG
-from yolox.custom_layers import MockOneClass
-from yolox.metrics import placeholder_loss, custom_yolox_loss, od_metrics_dict
+from yolox.metrics import placeholder_loss, od_metrics_dict
 from yolox.utils.general_utils import extract_and_cache_bboxes, map_class_ids
+from yolox.utils.yolox_loss import simple_od_loss
 from yolox.visualizers import gt_bb_decoder, pred_bb_visualizer
 
 
@@ -77,7 +77,11 @@ def input_image(idx: int, data: PreprocessResponse) -> np.ndarray:
         path = os.path.join(data['dataset_path'], f"images/{x['file_name']}")
     image = Image.open(path)
     image = image.resize((CONFIG['IMAGE_SIZE'][0], CONFIG['IMAGE_SIZE'][1]), Image.BILINEAR)
-    return np.asarray(image)
+    image_array = np.asarray(image)
+    mean = np.mean(image_array, axis=(0, 1))
+    std = np.std(image_array, axis=(0, 1))
+    normalized_image = (image_array - mean) / std
+    return normalized_image
 
 
 def get_annotation_coco(idx: int, data: PreprocessResponse) -> np.ndarray:
@@ -221,7 +225,7 @@ def metadata_dict(idx: int, data: PreprocessResponse) -> Dict[str, Union[float, 
 # ---------------------------------------------------------binding------------------------------------------------------
 # preprocess function
 leap_binder.set_preprocess(subset_images)
-leap_binder.set_unlabeled_data_preprocess(unlabeled_preprocessing_func)
+# leap_binder.set_unlabeled_data_preprocess(unlabeled_preprocessing_func)
 # unlabeled data preprocess
 # set input and gt
 leap_binder.set_input(input_image, 'images')
@@ -231,7 +235,7 @@ leap_binder.add_prediction('bbox coordinates', ["x1", "y1", "x2", "y2"])
 leap_binder.add_prediction('classes', list(CONFIG['class_id_to_name'].values()))
 # set custom loss
 leap_binder.add_custom_loss(placeholder_loss, 'zero_loss')
-leap_binder.add_custom_loss(custom_yolox_loss, 'custom_yolox_loss')
+leap_binder.add_custom_loss(simple_od_loss, 'custom_yolox_loss')
 # set visualizers
 leap_binder.set_visualizer(gt_bb_decoder, 'gt_bb_visualizer', LeapDataType.ImageWithBBox)
 leap_binder.set_visualizer(pred_bb_visualizer, 'pred_bb_visualizer', LeapDataType.ImageWithBBox)

@@ -9,6 +9,7 @@ from yolox.config import CONFIG
 from yolox.utils.general_utils import bb_array_to_object
 from yolox.utils.yolox_loss import decode_outputs
 
+
 # Visualizers
 # def pred_bb_decoder(image: np.ndarray, reg: tf.Tensor, cls: tf.Tensor) -> LeapImageWithBBox:
 #     """
@@ -23,7 +24,8 @@ def pred_bb_visualizer(image: np.ndarray, y_pred: tf.Tensor) -> LeapImageWithBBo
     bboxes = []
     decoded_output = decode_outputs(y_pred[None, ...])[0].numpy()
     xywh = decoded_output[..., :4]
-    xywh /= [*CONFIG['IMAGE_SIZE'][::-1], *CONFIG['IMAGE_SIZE'][::-1]]    # in absolute units
+    predicted_classes = np.argmax(decoded_output[:, 5:], -1)
+    xywh /= [*CONFIG['IMAGE_SIZE'][::-1], *CONFIG['IMAGE_SIZE'][::-1]]  # in absolute units
     for i in range(len(xywh)):
         confidence = decoded_output[i, 4] * np.max(decoded_output[i, 5:])
         if confidence < CONFIG['CONF_THRESH']:
@@ -36,9 +38,10 @@ def pred_bb_visualizer(image: np.ndarray, y_pred: tf.Tensor) -> LeapImageWithBBo
                 width=bbox[2],
                 height=bbox[3],
                 confidence=confidence,
-                label=''
+                label=CONFIG['class_id_to_name'].get(predicted_classes[i].astype(int))
             ))
-    return LeapImageWithBBox((image).astype(np.uint8), bboxes)
+    image = (image - np.min(image)) / np.max(image - np.min(image)) * 255
+    return LeapImageWithBBox(image.astype(np.uint8), bboxes)
 
 
 def gt_bb_decoder(image: np.ndarray, bb_gt: np.ndarray) -> LeapImageWithBBox:
@@ -54,4 +57,5 @@ def gt_bb_decoder(image: np.ndarray, bb_gt: np.ndarray) -> LeapImageWithBBox:
     """
     bb_object: List[BoundingBox] = bb_array_to_object(bb_gt, iscornercoded=False, bg_label=CONFIG['BACKGROUND_LABEL'],
                                                       is_gt=True)
-    return LeapImageWithBBox(data=(image * 255).astype(np.float32), bounding_boxes=bb_object)
+    image = (image - np.min(image)) / np.max(image - np.min(image)) * 255
+    return LeapImageWithBBox(data=image.astype(np.uint8), bounding_boxes=bb_object)

@@ -6,6 +6,7 @@ from yolox.config import CONFIG
 from yolox.utils.yolo_utils import run_single_scale
 from yolox.utils.yolox_loss import get_od_losses
 
+
 def compute_losses(y_true: tf.Tensor, y_pred: tf.Tensor):
     batch = y_true.shape[0]
     pred_scales = []
@@ -33,7 +34,7 @@ def compute_losses(y_true: tf.Tensor, y_pred: tf.Tensor):
 
         predicted_classes_all = tf.transpose(y_pred[0, 5:, :])
         classes_loss = tf.keras.losses.CategoricalCrossentropy(from_logits=False)(true_classes_all,
-                                                                                 predicted_classes_all)
+                                                                                  predicted_classes_all)
 
         mean_reg_bbox_loss = tf.reduce_mean(reg_loss_all)
         mean_reg_bbox_loss = tf.cond(tf.math.is_nan(mean_reg_bbox_loss), lambda: 0.0, lambda: mean_reg_bbox_loss)
@@ -66,6 +67,6 @@ def od_metrics_dict(y_true: tf.Tensor, y_pred: tf.Tensor):
             'objectness_loss': conf_loss}
 
 
-def placeholder_loss(y_true, reg: tf.Tensor, cls: tf.Tensor) -> tf.Tensor:  # return batch
+def placeholder_loss(y_true, y_pred: tf.Tensor) -> tf.Tensor:  # return batch
 
     return tf.reduce_mean(y_true, axis=-1) * 0

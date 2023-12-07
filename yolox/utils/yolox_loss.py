@@ -2,17 +2,9 @@ import numpy as np
 import tensorflow as tf
 from code_loader.helpers.detection.utils import xywh_to_xyxy_format
 from code_loader.helpers.detection.utils import jaccard
+from numpy._typing import NDArray
+
 from yolox.config import CONFIG
-
-N_SAMPLES = 1100
-N_TRAIN = 10
-N_TEST = N_SAMPLES - N_TRAIN
-
-PROJECT_ID = 'hp-dev-project'
-BUCKET_NAME = 'hp-datasets'
-DIR_NAME = "Test_MegaDB_BarakHS_HI4AI"
-image_name_col = "fname"
-LABELS = ['0', '11', '8', '1', '3', '9']
 
 
 def decode_outputs(pred):
@@ -52,29 +44,33 @@ def get_od_losses(y_true: tf.Tensor, y_pred: tf.Tensor):
     bboxes /= [*CONFIG['IMAGE_SIZE'][::-1], *CONFIG['IMAGE_SIZE'][::-1]]
     batch = y_true.shape[0]
     bbs_count = bboxes.shape[1]
-    reg_loss_list = [tf.constant(0, dtype=tf.float32)]*batch
+    reg_loss_list = [tf.constant(0, dtype=tf.float32)] * batch
     class_loss_list = []
     conf_loss_list = []
     for i in range(batch):
         confidence_gt = tf.zeros(bbs_count)
-        classes_gt = tf.zeros((bbs_count, CONFIG['CLASSES'] - 1), tf.float32)
-        classes_gt = tf.concat([tf.ones((bbs_count, 1), tf.float32), classes_gt], axis=-1)
+        classes_gt = tf.zeros((bbs_count, CONFIG['CLASSES']), tf.float32)
+        # classes_gt = tf.zeros((bbs_count, CONFIG['CLASSES'] - 1), tf.float32)
+        # classes_gt = tf.concat([tf.ones((bbs_count, 1), tf.float32), classes_gt], axis=-1) # TODO: does the model predicts background?
 
         y_true_real = y_true[i][y_true[i][..., -1] != CONFIG['BACKGROUND_LABEL']]
-        xyxy_gt = xywh_to_xyxy_format(y_true_real[...,:-1])
+        xyxy_gt = xywh_to_xyxy_format(y_true_real[..., :-1])
         xyxy_pred = xywh_to_xyxy_format(bboxes[i, ...])
-        ious = jaccard(xyxy_pred, xyxy_gt) #BB, #GT
+        ious = jaccard(xyxy_pred, xyxy_gt)  # BB, #GT
         max_iou = tf.reduce_max(ious, -1)
         all_gt_idx = tf.argmax(ious, 1)
         matched_bbs_idx = tf.where(max_iou > CONFIG['LOSS_IOU_TH'])[..., 0]
         if matched_bbs_idx.shape[0] > 0:
             positive_gt_idx = tf.gather(all_gt_idx, matched_bbs_idx)
-            matched_gts = tf.gather(xyxy_gt, positive_gt_idx)
+            matched_gts_bboxes = tf.gather(xyxy_gt, positive_gt_idx)
+            matched_gts_classes = tf.gather(y_true_real[..., -1], positive_gt_idx)
             matched_bbs = tf.gather(xyxy_pred, matched_bbs_idx)
-            reg_loss_list[i] = tf.keras.losses.MeanSquaredError()(matched_bbs, matched_gts)
-            matched_classes = tf.one_hot(tf.cast(matched_gts[...,-1], tf.int32), 80)
-        #compute reg loss
+            reg_loss_list[i] = tf.keras.losses.MeanSquaredError()(matched_bbs, matched_gts_bboxes)
+            test = tf.keras.losses.Huber()(matched_bbs, matched_gts_bboxes)
 
+            matched_classes = tf.one_hot(tf.cast(matched_gts_classes, tf.int32),
+                                         80)  # TODO: should be 1-hot with # classes dim (verify fix)
+            # compute reg loss
             positive_ious = tf.gather(max_iou, matched_bbs_idx)
             confidence_gt = tf.tensor_scatter_nd_update(
                 confidence_gt, matched_bbs_idx[..., None], positive_ious
@@ -84,9 +80,20 @@ def get_od_losses(y_true: tf.Tensor, y_pred: tf.Tensor):
             )
         class_loss = tf.keras.losses.CategoricalCrossentropy(from_logits=False)(classes_gt, decoded_preds[i, ..., 5:])
         confidence_loss = tf.keras.losses.MeanSquaredError()(confidence_gt, decoded_preds[i, ..., 4])
+
         conf_loss_list.append(confidence_loss)
         class_loss_list.append(class_loss)
     conf_loss = tf.stack(conf_loss_list, axis=0)
     class_loss = tf.stack(class_loss_list, axis=0)
     reg_loss_list = tf.stack(reg_loss_list, axis=0)
     return conf_loss, class_loss, reg_loss_list
+
+
+def nms(self, np_selection: NDArray[np.float32]) -> tf.Tensor:
+    boxes = np_selection[:, 1:5]
+    scores = np_selection[:, 0]
+    selected_indices = tf.image.non_max_suppression(boxes=boxes,
+                                                    scores=scores,
+                                                    max_output_size=self.top_k,
+                                                    iou_threshold=self.nms_thresh)
+    return selected_indices
