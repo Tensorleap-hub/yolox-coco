@@ -1,7 +1,7 @@
 import json
 import os
 from pycocotools.coco import COCO
-from yolonas.config import CONFIG
+from yolox.config import CONFIG
 
 # get dataset path from config
 dataset_path = CONFIG['dataset_path']
@@ -21,5 +21,5 @@ original_labels_to_consecutive = {original_label: consecutive_label for consecut
                                   enumerate(train_label_ids)}
 logit_to_name = {logit: name for logit, name in zip(original_labels_to_consecutive.values(), id_to_name.values())}
 
-with open('yolonas/label_id_to_name.json', 'w') as f:
+with open('yolox/label_id_to_name.json', 'w') as f:
     json.dump(logit_to_name, f, indent=4)

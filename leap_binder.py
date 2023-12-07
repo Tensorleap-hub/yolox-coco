@@ -10,12 +10,14 @@ from code_loader.contract.datasetclasses import PreprocessResponse
 from code_loader.contract.enums import LeapDataType
 from pycocotools.coco import COCO
 
-from yolonas.config import dataset_path, unlabeled_dataset_path, CONFIG
-from yolonas.custom_layers import MockOneClass
-from yolonas.metrics import custom_yolo_nas_loss, placeholder_loss, general_metrics_dict, od_loss, iou_metrics_dict
-from yolonas.utils.general_utils import extract_and_cache_bboxes, map_class_ids
-from yolonas.visualizers import pred_bb_decoder, gt_bb_decoder
-from yolonas.utils.confusion_matrix import confusion_matrix_metric
+from yolox.config import dataset_path, unlabeled_dataset_path, CONFIG
+from yolox.metrics import placeholder_loss, od_metrics_dict
+from yolox.utils.general_utils import extract_and_cache_bboxes, map_class_ids
+from yolox.utils.yolox_loss import simple_od_loss
+from yolox.visualizers import gt_bb_decoder, pred_bb_visualizer
+
+
+# from yolox.utils.confusion_matrix import confusion_matrix_metric
 
 
 # ----------------------------------------------------data processing--------------------------------------------------
@@ -75,7 +77,8 @@ def input_image(idx: int, data: PreprocessResponse) -> np.ndarray:
         path = os.path.join(data['dataset_path'], f"images/{x['file_name']}")
     image = Image.open(path)
     image = image.resize((CONFIG['IMAGE_SIZE'][0], CONFIG['IMAGE_SIZE'][1]), Image.BILINEAR)
-    return np.asarray(image) / 255.
+    image_array = np.asarray(image)
+    return image_array
 
 
 def get_annotation_coco(idx: int, data: PreprocessResponse) -> np.ndarray:
@@ -219,7 +222,7 @@ def metadata_dict(idx: int, data: PreprocessResponse) -> Dict[str, Union[float, 
 # ---------------------------------------------------------binding------------------------------------------------------
 # preprocess function
 leap_binder.set_preprocess(subset_images)
-leap_binder.set_unlabeled_data_preprocess(unlabeled_preprocessing_func)
+# leap_binder.set_unlabeled_data_preprocess(unlabeled_preprocessing_func)
 # unlabeled data preprocess
 # set input and gt
 leap_binder.set_input(input_image, 'images')
@@ -229,20 +232,14 @@ leap_binder.add_prediction('bbox coordinates', ["x1", "y1", "x2", "y2"])
 leap_binder.add_prediction('classes', list(CONFIG['class_id_to_name'].values()))
 # set custom loss
 leap_binder.add_custom_loss(placeholder_loss, 'zero_loss')
-leap_binder.add_custom_loss(custom_yolo_nas_loss, 'custom_yolo_nas_loss')
-leap_binder.add_custom_loss(od_loss, 'od_loss')
-
+leap_binder.add_custom_loss(simple_od_loss, 'custom_yolox_loss')
 # set visualizers
-leap_binder.set_visualizer(gt_bb_decoder, 'bb_gt_decoder', LeapDataType.ImageWithBBox)
-leap_binder.set_visualizer(pred_bb_decoder, 'pred_bb_decoder', LeapDataType.ImageWithBBox)
-leap_binder.add_custom_metric(confusion_matrix_metric, "Confusion metric")
-leap_binder.add_custom_metric(iou_metrics_dict, 'iou_metrics')
-
-#
-leap_binder.set_custom_layer(MockOneClass, 'reduce_to_one_class')
+leap_binder.set_visualizer(gt_bb_decoder, 'gt_bb_visualizer', LeapDataType.ImageWithBBox)
+leap_binder.set_visualizer(pred_bb_visualizer, 'pred_bb_visualizer', LeapDataType.ImageWithBBox)
+# leap_binder.add_custom_metric(confusion_matrix_metric, "Confusion metric")
 # set metadata
 leap_binder.set_metadata(metadata_dict, name='metadata')
-# metric
-leap_binder.add_custom_metric(general_metrics_dict, 'od_metrics')
+# custom metrics
+leap_binder.add_custom_metric(od_metrics_dict, 'od_metrics')
 if __name__ == '__main__':
     leap_binder.check()

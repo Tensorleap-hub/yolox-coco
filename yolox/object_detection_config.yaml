@@ -1,0 +1,35 @@
+dataset_path: /Users/ranhomri/tensorleap/data/coco-2017
+unlabeled_dataset_path: /Users/ranhomri/tensorleap/data/coco-2017/images/
+train_file: train.json
+val_file: train.json
+
+
+TRAIN_SIZE: 32
+VAL_SIZE: 8
+LOSS_IOU_TH: 0.3
+
+BACKGROUND_LABEL: 81
+CLASSES: 80
+CONF_THRESH: 0.35
+CM_IOU_THRESH: 0.25
+TOP_K: 100
+IMAGE_SIZE: [640, 640]
+SCALE_TO_SIZE: 636
+LOAD_UNION_CATEGORIES_IMAGES: true
+MAX_BB_PER_IMAGE: 20
+MODEL_FORMAT: inference
+NMS_THRESH: 0.75
+OFFSET: 0
+OVERLAP_THRESH: 0.0625
+SMALL_BBS_TH: 0.0003
+STRIDES:
+- 8
+- 16
+- 32
+FEATURE_MAPS:
+- - 80
+  - 80
+- - 40
+  - 40
+- - 20
+  - 20

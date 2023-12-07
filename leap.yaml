@@ -1,22 +1,12 @@
-codeIntegrationId: 6555ed3b90a9f80019f449f7
-projectId: 6555ed0890a9f80019f449ef
-secretId: ""
-entryFile: leap_binder.py
+codeIntegrationId: 656f212789da0b001249e74b
+projectId: 656f211e89da0b001249e747
+secretId: 
+entryFile: 'leap_binder.py'
 include:
-    - leap_binder.py
-    - leap_test.py
-    - leap_custom_test.py
-    - yolonas/label_id_to_name.json
-    - yolonas/config.py
-    - yolonas/metrics.py
-    - yolonas/visualizers.py
-    - yolonas/custom_layers.py
-    - yolonas/object_detection_config.yaml
-    - yolonas/utils/dataclasses.py
-    - yolonas/utils/decoder.py
-    - yolonas/utils/gcs_utils.py
-    - yolonas/utils/yolo_utils.py
-    - yolonas/utils/general_utils.py
-    - yolonas/utils/confusion_matrix.py
-    - yolonas/data/posprocessing.py
-    - yolonas/data/preprocessing.py
+  - leap_binder.py
+  - leap_custom_test.py
+  - yolox/*.py
+  - yolox/label_id_to_name.json
+  - yolox/object_detection_config.yaml
+  - yolox/utils/*.py
+  - yolox/data/*.py

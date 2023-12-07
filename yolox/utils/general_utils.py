@@ -7,23 +7,22 @@ from code_loader.contract.responsedataclasses import BoundingBox
 from matplotlib import patches
 import matplotlib.pyplot as plt
 from numpy._typing import NDArray
-from yolonas.config import CONFIG
-from yolonas.utils.yolo_utils import decoder
+from yolox.config import CONFIG
 from code_loader.helpers.detection.utils import xyxy_to_xywh_format
 from code_loader.helpers.detection.yolo.enums import YoloDecodingType
 from code_loader import leap_binder
 
 
-def get_predict_bbox_list(reg_fixed: tf.Tensor, cls: tf.Tensor) -> List[BoundingBox]:
-    """
-    Description: This function takes a TensorFlow tensor data as input and returns a list of bounding boxes representing predicted annotations.
-    Input: data (tf.Tensor): A TensorFlow tensor representing the output data.
-    Output: bb_object (List[BoundingBox]): A list of bounding box objects representing the predicted annotations.
-    """
-    outputs = decoder(loc_data=[np.expand_dims(reg_fixed, 0)], conf_data=[np.expand_dims(cls, 0)], prior_data=[None],
-                      from_logits=False, decoded=True)
-    bb_object = bb_array_to_object(outputs[0], iscornercoded=True, bg_label=CONFIG['BACKGROUND_LABEL'])
-    return bb_object
+# def get_predict_bbox_list(reg_fixed: tf.Tensor, cls: tf.Tensor) -> List[BoundingBox]:
+#     """
+#     Description: This function takes a TensorFlow tensor data as input and returns a list of bounding boxes representing predicted annotations.
+#     Input: data (tf.Tensor): A TensorFlow tensor representing the output data.
+#     Output: bb_object (List[BoundingBox]): A list of bounding box objects representing the predicted annotations.
+#     """
+#     outputs = decoder(loc_data=[np.expand_dims(reg_fixed, 0)], conf_data=[np.expand_dims(cls, 0)], prior_data=[None],
+#                       from_logits=False, decoded=True)
+#     bb_object = bb_array_to_object(outputs[0], iscornercoded=True, bg_label=CONFIG['BACKGROUND_LABEL'])
+#     return bb_object
 
 
 def bb_array_to_object(bb_array: Union[NDArray[float], tf.Tensor], iscornercoded: bool = True, bg_label: int = 0,
@@ -228,7 +227,7 @@ def extract_and_cache_bboxes(idx: int, data: Dict):
     coco = data['cocofile']
     ann_ids = coco.getAnnIds(imgIds=x['id'])
     anns = coco.loadAnns(ann_ids)
-    bboxes = np.zeros([CONFIG['MAX_BB_PER_IMAGE'], 5])
+    bboxes = np.zeros([CONFIG['MAX_BB_PER_IMAGE'], 5], dtype=np.float32)
     max_anns = min(CONFIG['MAX_BB_PER_IMAGE'], len(anns))
     for i in range(max_anns):
         ann = anns[i]

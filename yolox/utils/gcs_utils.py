@@ -8,7 +8,7 @@ from google.oauth2 import service_account
 
 from functools import lru_cache
 
-from yolonas.config import CONFIG
+from yolox.config import CONFIG
 
 
 @lru_cache()
