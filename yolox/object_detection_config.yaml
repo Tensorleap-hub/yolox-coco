@@ -1,12 +1,12 @@
 dataset_path: /Users/ranhomri/tensorleap/data/coco-2017
-unlabeled_dataset_path: /Users/ranhomri/tensorleap/data/coco-2017/images/
+unlabeled_dataset_path: /Users/ranhomri/tensorleap/data/coco-2017/unlabeled/
 train_file: train.json
-val_file: train.json
+val_file: val.json
 
 
-TRAIN_SIZE: 256
+TRAIN_SIZE: 64
 VAL_SIZE: 8
-UNLABELED_SIZE: 32
+UNLABELED_SIZE: 8
 
 IOU_TH: 0.3
 BACKGROUND_LABEL: 81
