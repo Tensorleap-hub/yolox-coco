@@ -2,6 +2,7 @@ import tensorflow as tf
 from leap_binder import (
     subset_images, input_image, get_bbs, metadata_dict, unlabeled_preprocessing_func
 )
+from yolox.config import CONFIG
 from yolox.metrics import od_metrics_dict
 from yolox.utils.confusion_matrix import confusion_matrix_metric
 from yolox.utils.general_utils import draw_image_with_boxes
@@ -10,7 +11,10 @@ from yolox.utils.yolox_loss import custom_yolox_loss
 
 
 def check_integration():
-    model_path = 'model/yolox_s_permuted.h5'
+    if CONFIG['permuted_output']:
+        model_path = 'model/yolox_s_permuted.h5'
+    else:
+        model_path = 'model/yolox_s.h5'
     model = tf.keras.models.load_model(model_path)
     batch = 4
     responses = subset_images()  # get dataset splits

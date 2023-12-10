@@ -1,4 +1,4 @@
-# YOLO-NAS Object Detection
+# YOLOx Object Detection
 The repository below is simulating integration to your local directory.
 To understand the integration work that is required for that, please look at `leap_binder.py`
 
@@ -34,7 +34,14 @@ leap project push model/yolox_s.onnx
 
 Now, we can open http://localhost:4589 and evaluate our model.
 
+We also made another version that adds a permute layer to the end of the model:
 
+```bash
+./upload_permuted_model.sh model/yolox_s.onnx
+```
+* When using the permuted model make sure to set the `permuted_output` property in the configuration file to `True` 
+* This option is preferable if the model layer name is different since the `leap_mapping.yaml` file won't find the layers it expects.
+* Please replace the model path with your model
 
 
 ## Prerequisites
