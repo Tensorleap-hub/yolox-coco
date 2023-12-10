@@ -3,40 +3,15 @@ from code_loader.helpers.detection.utils import xywh_to_xyxy_format
 from code_loader.helpers.detection.utils import jaccard
 
 from yolox.config import CONFIG
+from yolox.utils.yolo_utils import decode_outputs
 
 
-def decode_outputs(pred):
-    pred = tf.transpose(pred, (0, 2, 1))  # [batch, n_anchors, n_classes+5]
-    grids = []
-    strides = []
-    for (hsize, wsize), stride in zip(CONFIG['FEATURE_MAPS'], CONFIG['STRIDES']):
-        xv, yv = tf.meshgrid(tf.range(wsize), tf.range(hsize))  # Corrected order of ranges
-        grid = tf.stack((xv, yv), 2)
-        grid = tf.reshape(grid, (1, -1, 2))
-        grids.append(grid)
-        shape = grid.shape[:2]
-        strides.append(tf.fill((shape[0], shape[1], 1), stride))
-
-    grids = tf.concat(grids, axis=1)
-    grids = tf.cast(grids, tf.float32)
-    strides = tf.concat(strides, axis=1)
-    strides = tf.cast(strides, tf.float32)
-
-    decoded_outputs = tf.concat([
-        (pred[..., 0:2] + grids) * strides,  # x, y
-        tf.exp(pred[..., 2:4]) * strides,  # w, h
-        pred[..., 4:]  # conf + classes
-    ], axis=-1)
-
-    return decoded_outputs
-
-
-def simple_od_loss(y_true: tf.Tensor, y_pred: tf.Tensor):
-    conf_loss, class_loss, reg_loss_list = get_od_losses(y_true, y_pred)
+def custom_yolox_loss(y_true: tf.Tensor, y_pred: tf.Tensor):
+    conf_loss, class_loss, reg_loss_list = get_yolox_od_losses(y_true, y_pred)
     return conf_loss + class_loss + reg_loss_list
 
 
-def get_od_losses(y_true: tf.Tensor, y_pred: tf.Tensor):
+def get_yolox_od_losses(y_true: tf.Tensor, y_pred: tf.Tensor):
     decoded_preds = decode_outputs(y_pred)  # in absolute units
     bboxes = decoded_preds[:, :, :4]
     bboxes /= [*CONFIG['IMAGE_SIZE'][::-1], *CONFIG['IMAGE_SIZE'][::-1]]
@@ -57,7 +32,7 @@ def get_od_losses(y_true: tf.Tensor, y_pred: tf.Tensor):
         ious = jaccard(xyxy_pred, xyxy_gt)  # BB, #GT
         max_iou = tf.reduce_max(ious, -1)
         all_gt_idx = tf.argmax(ious, 1)
-        matched_bbs_idx = tf.where(max_iou > CONFIG['LOSS_IOU_TH'])[..., 0]
+        matched_bbs_idx = tf.where(max_iou > CONFIG['IOU_TH'])[..., 0]
         if matched_bbs_idx.shape[0] > 0:
             positive_gt_idx = tf.gather(all_gt_idx, matched_bbs_idx)
             matched_gts_bboxes = tf.gather(xyxy_gt, positive_gt_idx)
