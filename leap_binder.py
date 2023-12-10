@@ -75,6 +75,8 @@ def input_image(idx: int, data: PreprocessResponse) -> np.ndarray:
     image = Image.open(path)
     image = image.resize((CONFIG['IMAGE_SIZE'][0], CONFIG['IMAGE_SIZE'][1]), Image.BILINEAR)
     image_array = np.asarray(image)
+    if image_array.shape[-1] != 3:
+        image_array = np.repeat(image_array[..., np.newaxis], 3, axis=-1)
     return image_array
 
 

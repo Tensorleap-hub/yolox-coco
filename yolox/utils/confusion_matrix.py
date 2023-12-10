@@ -19,6 +19,7 @@ def confusion_matrix_metric(gt, y_pred):
         batch_outputs = outputs[batch_i, above_conf_indices, :]
         nms_selected = nms(batch_outputs[:, :5], is_xyxy=False).numpy()
         batch_outputs = batch_outputs[nms_selected, :]
+        classes_pred = np.argmax(batch_outputs[:, 5:], axis=-1)
         confusion_matrix_elements = []
         if len(batch_outputs) != 0:
             ious = jaccard(xywh_to_xyxy_format(batch_outputs[:, :4]) / CONFIG['IMAGE_SIZE'][0],
@@ -26,7 +27,7 @@ def confusion_matrix_metric(gt, y_pred):
             prediction_detected = np.any((ious > threshold), axis=1)
             max_iou_ind = np.argmax(ious, axis=1)
             for i, prediction in enumerate(prediction_detected):
-                gt_idx = int(gt[batch_i, max_iou_ind[i], 4])
+                gt_idx = int(classes_pred[max_iou_ind[i]])
                 class_name = id_to_name.get(gt_idx)
                 gt_label = f"{class_name}"
                 confidence = batch_outputs[i, 4]
