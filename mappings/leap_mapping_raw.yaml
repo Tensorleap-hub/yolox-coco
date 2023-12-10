@@ -3,18 +3,151 @@ decorators:
     data:
       type: Input
       output_name: images
-      selected: images
-    id: '568'
+    id: '229'
     inputs: {}
     outputs:
       images:
         - inputKey: input
           operation: Permute
-          name: permute_213
-          id: '171'
+          name: permute_177
+          id: '228'
         - inputKey: data
           operation: Visualizer
-          id: '569'
+          id: '516'
+  - operation: CustomLoss
+    data:
+      arg_names:
+        - y_true
+        - y_pred
+      name: custom_yolox_loss
+      selected: custom_yolox_loss
+      type: CustomLoss
+    id: '509'
+    inputs:
+      y_pred:
+        - outputKey: feature_map
+          operation: Permute
+          name: permute_178
+          id: '1'
+      y_true:
+        - outputKey: bbs
+          operation: GroundTruth
+          id: '511'
+    outputs:
+      loss:
+        - inputKey: '0'
+          operation: Adam
+          id: '510'
+  - operation: Adam
+    data:
+      type: Optimizer
+      custom_input_keys:
+        - 510-0
+    id: '510'
+    inputs:
+      '0':
+        - outputKey: loss
+          operation: CustomLoss
+          id: '509'
+    outputs: {}
+  - operation: GroundTruth
+    data:
+      type: GroundTruth
+      output_name: bbs
+      selected: bbs
+    id: '511'
+    inputs: {}
+    outputs:
+      bbs:
+        - inputKey: y_true
+          operation: Metric
+          id: '513'
+        - inputKey: bb_gt
+          operation: Visualizer
+          id: '515'
+        - inputKey: gt
+          operation: Metric
+          id: '517'
+        - inputKey: y_true
+          operation: CustomLoss
+          id: '509'
+  - operation: Input
+    data:
+      type: Input
+      output_name: images
+      selected: images
+    id: '512'
+    inputs: {}
+    outputs:
+      images:
+        - inputKey: image
+          operation: Visualizer
+          id: '515'
+        - inputKey: image
+          operation: Visualizer
+          id: '514'
+  - operation: Metric
+    data:
+      type: Metric
+      name: od_metrics
+      metric_name: od_metrics
+      arg_names:
+        - y_true
+        - y_pred
+      user_unique_name: od_metrics
+    id: '513'
+    inputs:
+      y_pred:
+        - outputKey: feature_map
+          operation: Permute
+          name: permute_178
+          id: '1'
+      y_true:
+        - outputKey: bbs
+          operation: GroundTruth
+          id: '511'
+    outputs: {}
+  - operation: Visualizer
+    data:
+      type: Visualizer
+      visualizer_name: pred_bb_visualizer
+      visualizer_type: ImageWithBBox
+      arg_names:
+        - image
+        - y_pred
+      user_unique_name: pred_bb_visualizer
+    id: '514'
+    inputs:
+      y_pred:
+        - outputKey: feature_map
+          operation: Permute
+          name: permute_178
+          id: '1'
+      image:
+        - outputKey: images
+          operation: Input
+          id: '512'
+    outputs: {}
+  - operation: Visualizer
+    data:
+      type: Visualizer
+      visualizer_name: gt_bb_visualizer
+      visualizer_type: ImageWithBBox
+      arg_names:
+        - image
+        - bb_gt
+      user_unique_name: gt_bb_visualizer
+    id: '515'
+    inputs:
+      bb_gt:
+        - outputKey: bbs
+          operation: GroundTruth
+          id: '511'
+      image:
+        - outputKey: images
+          operation: Input
+          id: '512'
+    outputs: {}
   - operation: Visualizer
     data:
       type: Visualizer
@@ -24,242 +157,32 @@ decorators:
       arg_names:
         - data
       user_unique_name: Image
-    id: '569'
+    id: '516'
     inputs:
       data:
         - outputKey: images
           operation: Input
-          id: '568'
-    outputs: {}
-  - operation: Visualizer
-    data:
-      type: Visualizer
-      name: bb_gt_decoder
-      visualizer_name: bb_gt_decoder
-      visualizer_type: ImageWithBBox
-      arg_names:
-        - image
-        - bb_gt
-      user_unique_name: bb_gt_decoder
-    id: '570'
-    inputs:
-      bb_gt:
-        - outputKey: bbs
-          operation: GroundTruth
-          id: '571'
-      image:
-        - outputKey: images
-          operation: Input
-          id: '572'
-    outputs: {}
-  - operation: GroundTruth
-    data:
-      type: GroundTruth
-      output_name: bbs
-      selected: bbs
-    id: '571'
-    inputs: {}
-    outputs:
-      bbs:
-        - inputKey: bb_gt
-          operation: Visualizer
-          id: '570'
-        - inputKey: gt
-          operation: Metric
-          id: '576'
-        - inputKey: bb_gt
-          operation: Metric
-          id: '578'
-        - inputKey: bb_gt
-          operation: Metric
-          id: '579'
-        - inputKey: bb_gt
-          operation: CustomLoss
-          id: '577'
-  - operation: Input
-    data:
-      type: Input
-      output_name: images
-      selected: images
-    id: '572'
-    inputs: {}
-    outputs:
-      images:
-        - inputKey: image
-          operation: Visualizer
-          id: '570'
-        - inputKey: image
-          operation: Visualizer
-          id: '573'
-        - inputKey: image
-          operation: Metric
-          id: '576'
-  - operation: Visualizer
-    data:
-      type: Visualizer
-      name: pred_bb_decoder
-      visualizer_name: pred_bb_decoder
-      visualizer_type: ImageWithBBox
-      arg_names:
-        - image
-        - reg
-        - cls
-      user_unique_name: pred_bb_decoder
-    id: '573'
-    inputs:
-      reg:
-        - outputKey: merged
-          operation: TFOpLambda
-          name: tf.math.multiply_20
-          id: '2'
-      cls:
-        - outputKey: feature_map
-          operation: Activation
-          name: '903'
-          id: '519'
-      image:
-        - outputKey: images
-          operation: Input
-          id: '572'
-    outputs: {}
-  - operation: Adam
-    data:
-      type: Optimizer
-      custom_input_keys:
-        - 575-0
-      arg_names:
-        - '0'
-    id: '575'
-    inputs:
-      '0':
-        - outputKey: loss
-          operation: CustomLoss
-          id: '577'
+          id: '229'
     outputs: {}
   - operation: Metric
     data:
       type: Metric
-      name: Confusion metric
-      metric_name: Confusion metric
+      name: confusion matrix
+      metric_name: confusion matrix
       arg_names:
         - gt
-        - cls
-        - reg
-        - image
-      user_unique_name: Confusion metric
-    id: '576'
+        - y_pred
+      user_unique_name: confusion matrix
+    id: '517'
     inputs:
-      reg:
-        - outputKey: merged
-          operation: TFOpLambda
-          name: tf.math.multiply_20
-          id: '2'
-      cls:
+      y_pred:
         - outputKey: feature_map
-          operation: Activation
-          name: '903'
-          id: '519'
+          operation: Permute
+          name: permute_178
+          id: '1'
       gt:
         - outputKey: bbs
           operation: GroundTruth
-          id: '571'
-      image:
-        - outputKey: images
-          operation: Input
-          id: '572'
+          id: '511'
     outputs: {}
-  - operation: CustomLoss
-    data:
-      arg_names:
-        - bb_gt
-        - reg
-        - cls
-      name: od_loss
-      selected: od_loss
-      type: CustomLoss
-    id: '577'
-    inputs:
-      reg:
-        - outputKey: merged
-          operation: TFOpLambda
-          name: tf.math.multiply_20
-          id: '2'
-      cls:
-        - outputKey: feature_map
-          operation: Activation
-          name: '903'
-          id: '519'
-      bb_gt:
-        - outputKey: bbs
-          operation: GroundTruth
-          id: '571'
-    outputs:
-      loss:
-        - inputKey: '0'
-          operation: Adam
-          id: '575'
-  - operation: Metric
-    data:
-      type: Metric
-      name: od_metrics
-      metric_name: od_metrics
-      arg_names:
-        - bb_gt
-        - reg
-        - cls
-      user_unique_name: od_metrics
-    id: '578'
-    inputs:
-      reg:
-        - outputKey: merged
-          operation: TFOpLambda
-          name: tf.math.multiply_20
-          id: '2'
-      cls:
-        - outputKey: feature_map
-          operation: Activation
-          name: '903'
-          id: '519'
-      bb_gt:
-        - outputKey: bbs
-          operation: GroundTruth
-          id: '571'
-    outputs: {}
-  - operation: Metric
-    data:
-      type: Metric
-      name: iou_metrics
-      metric_name: iou_metrics
-      arg_names:
-        - bb_gt
-        - reg
-        - cls
-      user_unique_name: iou_metrics
-    id: '579'
-    inputs:
-      reg:
-        - outputKey: merged
-          operation: TFOpLambda
-          name: tf.math.multiply_20
-          id: '2'
-      cls:
-        - outputKey: feature_map
-          operation: Activation
-          name: '903'
-          id: '519'
-      bb_gt:
-        - outputKey: bbs
-          operation: GroundTruth
-          id: '571'
-    outputs: {}
-layers:
-  - operation: TFOpLambda
-    data:
-      prediction_type: bbox coordinates
-    name: tf.math.multiply_20
-    id: '2'
-  - operation: Activation
-    data:
-      prediction_type: classes
-    name: '903'
-    id: '519'
+layers: []
