@@ -27,7 +27,7 @@ def confusion_matrix_metric(gt, y_pred):
             prediction_detected = np.any((ious > threshold), axis=1)
             max_iou_ind = np.argmax(ious, axis=1)
             for i, prediction in enumerate(prediction_detected):
-                gt_idx = int(classes_pred[max_iou_ind[i]])
+                gt_idx = int(gt[batch_i, max_iou_ind[i], 4])
                 class_name = id_to_name.get(gt_idx)
                 gt_label = f"{class_name}"
                 confidence = batch_outputs[i, 4]
@@ -38,7 +38,7 @@ def confusion_matrix_metric(gt, y_pred):
                         float(confidence)
                     ))
                 else:  # FP
-                    class_name = id_to_name.get(int(batch_outputs[i, -1]))
+                    class_name = id_to_name.get(int(classes_pred[i]))
                     pred_label = f"{class_name}"
                     confusion_matrix_elements.append(ConfusionMatrixElement(
                         str(pred_label),
@@ -51,7 +51,7 @@ def confusion_matrix_metric(gt, y_pred):
         for k, gt_detection in enumerate(gts_detected):
             label_idx = gt[batch_i, k, -1]
             if not gt_detection and label_idx != CONFIG['BACKGROUND_LABEL']:  # FN
-                class_name = id_to_name.get(int(gt[batch_i, k, -2]))
+                class_name = id_to_name.get(int(label_idx))
                 confusion_matrix_elements.append(ConfusionMatrixElement(
                     f"{class_name}",
                     ConfusionMatrixValue.Positive,
