@@ -1,5 +1,4 @@
 import os
-import sys
 from typing import List, Dict, Union
 import numpy as np
 from PIL import Image
@@ -13,11 +12,9 @@ from pycocotools.coco import COCO
 from yolox.config import dataset_path, unlabeled_dataset_path, CONFIG
 from yolox.metrics import placeholder_loss, od_metrics_dict
 from yolox.utils.general_utils import extract_and_cache_bboxes, map_class_ids
-from yolox.utils.yolox_loss import simple_od_loss
+from yolox.utils.yolox_loss import custom_yolox_loss
 from yolox.visualizers import gt_bb_decoder, pred_bb_visualizer
-
-
-# from yolox.utils.confusion_matrix import confusion_matrix_metric
+from yolox.utils.confusion_matrix import confusion_matrix_metric
 
 
 # ----------------------------------------------------data processing--------------------------------------------------
@@ -56,10 +53,10 @@ def unlabeled_preprocessing_func() -> PreprocessResponse:
     """
     This function returns the unlabeled data split in the format expected by tensorleap
     """
-    unlable_files = os.listdir(unlabeled_dataset_path)
-    unlabeled_size = len(unlable_files)
+    unlabeled_files = os.listdir(unlabeled_dataset_path)[:CONFIG['UNLABELED_SIZE']]
+    unlabeled_size = len(unlabeled_files)
     print(unlabeled_size)
-    unlabeled_subset = PreprocessResponse(length=unlabeled_size, data={'unlable_files': unlable_files,
+    unlabeled_subset = PreprocessResponse(length=unlabeled_size, data={'unlable_files': unlabeled_files,
                                                                        'dataset_path': unlabeled_dataset_path,
                                                                        'subdir': 'unlabeled'})
     return unlabeled_subset
@@ -222,7 +219,7 @@ def metadata_dict(idx: int, data: PreprocessResponse) -> Dict[str, Union[float, 
 # ---------------------------------------------------------binding------------------------------------------------------
 # preprocess function
 leap_binder.set_preprocess(subset_images)
-# leap_binder.set_unlabeled_data_preprocess(unlabeled_preprocessing_func)
+leap_binder.set_unlabeled_data_preprocess(unlabeled_preprocessing_func)
 # unlabeled data preprocess
 # set input and gt
 leap_binder.set_input(input_image, 'images')
@@ -232,11 +229,11 @@ leap_binder.add_prediction('bbox coordinates', ["x1", "y1", "x2", "y2"])
 leap_binder.add_prediction('classes', list(CONFIG['class_id_to_name'].values()))
 # set custom loss
 leap_binder.add_custom_loss(placeholder_loss, 'zero_loss')
-leap_binder.add_custom_loss(simple_od_loss, 'custom_yolox_loss')
+leap_binder.add_custom_loss(custom_yolox_loss, 'custom_yolox_loss')
 # set visualizers
 leap_binder.set_visualizer(gt_bb_decoder, 'gt_bb_visualizer', LeapDataType.ImageWithBBox)
 leap_binder.set_visualizer(pred_bb_visualizer, 'pred_bb_visualizer', LeapDataType.ImageWithBBox)
-# leap_binder.add_custom_metric(confusion_matrix_metric, "Confusion metric")
+leap_binder.add_custom_metric(confusion_matrix_metric, "confusion matrix")
 # set metadata
 leap_binder.set_metadata(metadata_dict, name='metadata')
 # custom metrics

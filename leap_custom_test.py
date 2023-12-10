@@ -6,14 +6,13 @@ from yolox.metrics import od_metrics_dict
 from yolox.utils.confusion_matrix import confusion_matrix_metric
 from yolox.utils.general_utils import draw_image_with_boxes
 from yolox.visualizers import gt_bb_decoder, pred_bb_visualizer
-from yolox.utils.yolox_loss import simple_od_loss
-import numpy as np
+from yolox.utils.yolox_loss import custom_yolox_loss
 
 
 def check_integration():
     model_path = 'model/yolox_s.h5'
     model = tf.keras.models.load_model(model_path)
-    batch = 8
+    batch = 4
     responses = subset_images()  # get dataset splits
     training_response = responses[1]
     unlabeled_response = unlabeled_preprocessing_func()
@@ -28,15 +27,14 @@ def check_integration():
         images.append(image)
         bbs_gt.append(bb_gt)
 
-    # metadata = metadata_dict(idx, training_response)
+    metadata = metadata_dict(0, training_response)
     y_true_bbs = tf.convert_to_tensor(bbs_gt)  # convert ground truth bbs to tensor
 
     input_img_tf = tf.convert_to_tensor(images, dtype=tf.float32)
     y_pred = model([input_img_tf])  # infer and get model prediction
-    loss = simple_od_loss(y_true_bbs, y_pred)
+    loss = custom_yolox_loss(y_true_bbs, y_pred)
     od_metrics = od_metrics_dict(y_true_bbs, y_pred)
 
-    iou_metrics = iou_metrics_dict(y_true_bbs, y_pred)
     conf_mat = confusion_matrix_metric(y_true_bbs, y_pred)
 
     for i in range(batch):

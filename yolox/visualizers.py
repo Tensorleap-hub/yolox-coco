@@ -3,26 +3,10 @@ import tensorflow as tf
 import numpy as np
 from code_loader.contract.responsedataclasses import BoundingBox
 from code_loader.contract.visualizer_classes import LeapImageWithBBox
-from code_loader.helpers.detection.utils import xywh_to_xyxy_format
-from numpy._typing import NDArray
 
 from yolox.config import CONFIG
 from yolox.utils.general_utils import bb_array_to_object
-from yolox.utils.yolox_loss import decode_outputs
-from code_loader.helpers.detection.yolo.utils import jaccard
-
-
-def nms(y_pred: NDArray[np.float32], is_xyxy: bool = True) -> tf.Tensor:
-    boxes = y_pred[..., :4]
-    if not is_xyxy:
-        boxes = xywh_to_xyxy_format(boxes)
-    scores = y_pred[..., 4]
-    selected_indices = tf.image.non_max_suppression(boxes=boxes,
-                                                    scores=scores,
-                                                    max_output_size=CONFIG['TOP_K'],
-                                                    iou_threshold=CONFIG['NMS_THRESH'],
-                                                    score_threshold=CONFIG['CONF_THRESH'])
-    return selected_indices
+from yolox.utils.yolo_utils import nms, decode_outputs
 
 
 def pred_bb_visualizer(image: np.ndarray, y_pred: tf.Tensor) -> LeapImageWithBBox:

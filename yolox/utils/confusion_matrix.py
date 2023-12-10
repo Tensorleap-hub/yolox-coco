@@ -4,15 +4,14 @@ from code_loader.contract.datasetclasses import ConfusionMatrixElement
 from code_loader.contract.enums import ConfusionMatrixValue
 import numpy as np
 from yolox.config import CONFIG
-from yolox.utils.yolox_loss import decode_outputs
-from yolox.visualizers import nms
+from yolox.utils.yolo_utils import nms, decode_outputs
 
 
 def confusion_matrix_metric(gt, y_pred):
     # assumes we get predictions in xyxy format in gt AND reg
     # assumes gt is in xywh form
     id_to_name = CONFIG['class_id_to_name']
-    threshold = CONFIG['CM_IOU_THRESH']
+    threshold = CONFIG['IOU_TH']
     outputs = decode_outputs(y_pred).numpy()
     ret = []
     for batch_i in range(len(outputs)):
