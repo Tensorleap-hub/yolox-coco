@@ -36,7 +36,7 @@ def check_integration():
     loss = simple_od_loss(y_true_bbs, y_pred)
     od_metrics = od_metrics_dict(y_true_bbs, y_pred)
 
-    # iou_metrics = iou_metrics_dict(y_true_bbs, reg, cls)
+    iou_metrics = iou_metrics_dict(y_true_bbs, y_pred)
     conf_mat = confusion_matrix_metric(y_true_bbs, y_pred)
 
     for i in range(batch):
