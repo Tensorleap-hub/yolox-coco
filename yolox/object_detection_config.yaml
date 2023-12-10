@@ -3,6 +3,7 @@ unlabeled_dataset_path: /Users/ranhomri/tensorleap/data/coco-2017/unlabeled/
 train_file: train.json
 val_file: val.json
 
+permuted_output: False
 
 TRAIN_SIZE: 64
 VAL_SIZE: 8

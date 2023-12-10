@@ -10,7 +10,7 @@ from yolox.utils.yolox_loss import custom_yolox_loss
 
 
 def check_integration():
-    model_path = 'model/yolox_s.h5'
+    model_path = 'model/yolox_s_permuted.h5'
     model = tf.keras.models.load_model(model_path)
     batch = 4
     responses = subset_images()  # get dataset splits

@@ -12,6 +12,8 @@ def custom_yolox_loss(y_true: tf.Tensor, y_pred: tf.Tensor):
 
 
 def get_yolox_od_losses(y_true: tf.Tensor, y_pred: tf.Tensor):
+    if CONFIG['permuted_output']:
+        y_pred = tf.transpose(y_pred, (0, 2, 1))
     decoded_preds = decode_outputs(y_pred)  # in absolute units
     bboxes = decoded_preds[:, :, :4]
     bboxes /= [*CONFIG['IMAGE_SIZE'][::-1], *CONFIG['IMAGE_SIZE'][::-1]]
@@ -51,7 +53,8 @@ def get_yolox_od_losses(y_true: tf.Tensor, y_pred: tf.Tensor):
                 classes_gt = tf.tensor_scatter_nd_update(
                     classes_gt, matched_bbs_idx[..., None], matched_classes
                 )
-            class_loss = tf.keras.losses.CategoricalCrossentropy(from_logits=False)(classes_gt, decoded_preds[i, ..., 5:])
+            class_loss = tf.keras.losses.CategoricalCrossentropy(from_logits=False)(classes_gt,
+                                                                                    decoded_preds[i, ..., 5:])
             confidence_loss = tf.keras.losses.MeanSquaredError()(confidence_gt, decoded_preds[i, ..., 4])
 
             conf_loss_list.append(confidence_loss)
