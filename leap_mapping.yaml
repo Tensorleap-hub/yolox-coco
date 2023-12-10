@@ -66,6 +66,9 @@
           - inputKey: bb_gt
             operation: Visualizer
             id: '515'
+          - inputKey: gt
+            operation: Metric
+            id: '517'
           - inputKey: y_true
             operation: CustomLoss
             id: '509'
@@ -137,14 +140,14 @@
         user_unique_name: gt_bb_visualizer
       id: '515'
       inputs:
-        image:
-          - outputKey: images
-            operation: Input
-            id: '512'
         bb_gt:
           - outputKey: bbs
             operation: GroundTruth
             id: '511'
+        image:
+          - outputKey: images
+            operation: Input
+            id: '512'
       outputs: {}
     - operation: Visualizer
       data:
@@ -161,5 +164,26 @@
           - outputKey: images
             operation: Input
             id: '229'
+      outputs: {}
+    - operation: Metric
+      data:
+        type: Metric
+        name: confusion matrix
+        metric_name: confusion matrix
+        arg_names:
+          - gt
+          - y_pred
+        user_unique_name: confusion matrix
+      id: '517'
+      inputs:
+        y_pred:
+          - outputKey: feature_map
+            operation: Permute
+            name: permute_178
+            id: '1'
+        gt:
+          - outputKey: bbs
+            operation: GroundTruth
+            id: '511'
       outputs: {}
   layers: []
