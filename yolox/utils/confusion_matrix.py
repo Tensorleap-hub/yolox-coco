@@ -10,8 +10,6 @@ from yolox.utils.yolo_utils import nms, decode_outputs
 def confusion_matrix_metric(gt, y_pred):
     # assumes we get predictions in xyxy format in gt AND reg
     # assumes gt is in xywh form
-    if CONFIG['permuted_output']:
-        y_pred = np.transpose(y_pred, (0, 2, 1))
     id_to_name = CONFIG['class_id_to_name']
     threshold = CONFIG['IOU_TH']
     outputs = decode_outputs(y_pred).numpy()

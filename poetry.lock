@@ -149,19 +149,18 @@ files = [
 
 [[package]]
 name = "code-loader"
-version = "1.0.17"
+version = "1.0.24"
 description = ""
 optional = false
 python-versions = ">=3.8,<3.12"
 files = [
-    {file = "code_loader-1.0.17-py3-none-any.whl", hash = "sha256:84882ce88052fe1549a246d223e83872f320ea7bbb06373b47b85584539aa29f"},
-    {file = "code_loader-1.0.17.tar.gz", hash = "sha256:4f797a531a397fb937cfd68768b3d9db814d6711d17da392f36f82644c850e65"},
+    {file = "code_loader-1.0.24-py3-none-any.whl", hash = "sha256:55be90646ebf9ceba6b708c7cae9f0f6ebe1b774240437ec5ced3988b3c5d50b"},
+    {file = "code_loader-1.0.24.tar.gz", hash = "sha256:6efbd3c34264913ba1e00585f2935ca227ea6d358e4b2c06a48104ab59b78a8b"},
 ]
 
 [package.dependencies]
 numpy = ">=1.22.3,<2.0.0"
 psutil = ">=5.9.5,<6.0.0"
-typeguard = ">=2.13.3,<3.0.0"
 
 [[package]]
 name = "code-loader-helpers"
@@ -2021,21 +2020,6 @@ tests = ["autopep8", "flake8", "isort", "numpy", "pytest", "scipy (>=1.7.1)"]
 tutorials = ["matplotlib", "pandas", "tabulate"]
 
 [[package]]
-name = "typeguard"
-version = "2.13.3"
-description = "Run-time type checker for Python"
-optional = false
-python-versions = ">=3.5.3"
-files = [
-    {file = "typeguard-2.13.3-py3-none-any.whl", hash = "sha256:5e3e3be01e887e7eafae5af63d1f36c849aaa94e3a0112097312aabfa16284f1"},
-    {file = "typeguard-2.13.3.tar.gz", hash = "sha256:00edaa8da3a133674796cf5ea87d9f4b4c367d77476e185e80251cc13dfbb8c4"},
-]
-
-[package.extras]
-doc = ["sphinx-autodoc-typehints (>=1.2.0)", "sphinx-rtd-theme"]
-test = ["mypy", "pytest", "typing-extensions"]
-
-[[package]]
 name = "typing-extensions"
 version = "4.5.0"
 description = "Backported and Experimental Type Hints for Python 3.7+"
@@ -2190,4 +2174,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.11"
-content-hash = "f0b2fa3ad31559b46d64c75a12cef3cf53989a74ffba32b6b908e36320b9dd4c"
+content-hash = "1026e09032ad2baa9bd836a1ccef758a6587fe08647d40623d6b7c8f0b4de6af"

@@ -11,8 +11,6 @@ from yolox.utils.yolo_utils import nms, decode_outputs
 
 def pred_bb_visualizer(image: np.ndarray, y_pred: tf.Tensor) -> LeapImageWithBBox:
     bboxes = []
-    if CONFIG['permuted_output']:
-        y_pred = tf.transpose(y_pred, (1, 0))
     decoded_output = decode_outputs(y_pred[None, ...])[0].numpy()
     nms_indices = nms(decoded_output, is_xyxy=False)
     decoded_output = decoded_output[nms_indices, :]
