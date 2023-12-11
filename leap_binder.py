@@ -227,7 +227,9 @@ leap_binder.set_unlabeled_data_preprocess(unlabeled_preprocessing_func)
 leap_binder.set_input(input_image, 'images')
 leap_binder.set_ground_truth(get_bbs, 'bbs')
 # set prediction (object)
-leap_binder.add_prediction('predictions', ["xc", "yc", "w", "h"] + ["obj"] + list(CONFIG['class_id_to_name'].values()))
+leap_binder.add_prediction(name='predictions',
+                           labels=["xc", "yc", "w", "h"] + ["obj"] + list(CONFIG['class_id_to_name'].values()),
+                           channel_dim=1)
 # set custom loss
 leap_binder.add_custom_loss(placeholder_loss, 'zero_loss')
 leap_binder.add_custom_loss(custom_yolox_loss, 'custom_yolox_loss')
