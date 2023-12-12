@@ -43,6 +43,8 @@ decorators:
       type: Optimizer
       custom_input_keys:
         - 510-0
+      arg_names:
+        - '0'
     id: '510'
     inputs:
       '0':
@@ -185,4 +187,9 @@ decorators:
           operation: GroundTruth
           id: '511'
     outputs: {}
-layers: []
+layers:
+  - operation: Permute
+    data:
+      prediction_type: predictions
+    name: permute_178
+    id: '1'
