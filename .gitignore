@@ -3,3 +3,4 @@ __pycache__/
 *.csv
 .idea/*
 *.pyc
+.DS_Store
