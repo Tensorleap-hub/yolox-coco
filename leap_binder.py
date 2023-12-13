@@ -146,24 +146,15 @@ def get_instances_num(bbs: np.ndarray) -> float:
     return float(round(valid_bbs.shape[0], 3))
 
 
-# def get_obj_bbox_occlusions_count(img: np.ndarray, bboxes: np.ndarray, calc_avg_flag=False) -> float:
-#     occlusion_threshold = 0.2  # Example threshold value
-#     occlusions_count = count_obj_bbox_occlusions(img, bboxes, occlusion_threshold, calc_avg_flag)
-#     return occlusions_count
-#
-#
-# def get_obj_bbox_occlusions_avg(img: np.ndarray, bboxes: np.ndarray) -> float:
-#     return get_obj_bbox_occlusions_count(img, bboxes, calc_avg_flag=True)
-
 
 def count_duplicate_bbs(bbs_gt: np.ndarray) -> int:
     real_gt = bbs_gt[bbs_gt[..., 4] != CONFIG['BACKGROUND_LABEL']]
     return int(real_gt.shape[0] != np.unique(real_gt, axis=0).shape[0])
 
 
-def count_persons(bbs_gt: np.ndarray) -> int:
-    person_gt = bbs_gt[bbs_gt[..., 4] == CONFIG['class_name_to_id']['person']]
-    return int(person_gt.shape[0])
+# def count_persons(bbs_gt: np.ndarray) -> int:
+#     person_gt = bbs_gt[bbs_gt[..., 4] == CONFIG['class_name_to_id']['person']]
+#     return int(person_gt.shape[0])
 
 
 def count_small_bbs(bboxes: np.ndarray) -> float:
@@ -191,7 +182,7 @@ def metadata_dict(idx: int, data: PreprocessResponse) -> Dict[str, Union[float, 
             "image_std": float(img.std()),
             "image_min": float(img.min()),
             "image_max": float(img.max()),
-            "number_of_persons": 0,
+            # "number_of_persons": 0,
         }
         return metadatas
 
@@ -211,9 +202,7 @@ def metadata_dict(idx: int, data: PreprocessResponse) -> Dict[str, Union[float, 
         "image_std": float(img.std()),
         "image_min": float(img.min()),
         "image_max": float(img.max()),
-        "number_of_persons": count_persons(bbs),
-        # "count_total_obj_bbox_occlusions": get_obj_bbox_occlusions_count(img, bbs),
-        # "avg_obj_bbox_occlusions": get_obj_bbox_occlusions_avg(img, bbs),
+        # "number_of_persons": count_persons(bbs),
     }
     return metadatas
 

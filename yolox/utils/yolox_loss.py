@@ -12,6 +12,9 @@ def custom_yolox_loss(y_true: tf.Tensor, y_pred: tf.Tensor):
 
 
 def get_yolox_od_losses(y_true: tf.Tensor, y_pred: tf.Tensor):
+    # TODO: this modification is temporary and should be removed after updating the loss to match all output logits.
+    #  This fix takes only the regression, confidence and class probabilities
+    y_pred = y_pred[:, :5 + CONFIG['CLASSES'], :]
     decoded_preds = decode_outputs(y_pred)  # in absolute units
     bboxes = decoded_preds[:, :, :4]
     bboxes /= [*CONFIG['IMAGE_SIZE'][::-1], *CONFIG['IMAGE_SIZE'][::-1]]
@@ -44,7 +47,8 @@ def get_yolox_od_losses(y_true: tf.Tensor, y_pred: tf.Tensor):
                 reg_loss_list[i] = tf.keras.losses.Huber()(matched_bbs, matched_gts_bboxes)
 
                 matched_classes = tf.one_hot(tf.cast(matched_gts_classes, tf.int32),
-                                             CONFIG['CLASSES'])  # TODO:(verify fix) 1-hot with # classes dim  so no need for background column
+                                             CONFIG[
+                                                 'CLASSES'])  # TODO:(verify fix) 1-hot with # classes dim  so no need for background column
                 # compute reg loss
                 positive_ious = tf.gather(max_iou, matched_bbs_idx)
                 confidence_gt = tf.tensor_scatter_nd_update(

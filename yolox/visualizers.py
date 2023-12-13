@@ -10,6 +10,10 @@ from yolox.utils.yolo_utils import nms, decode_outputs
 
 
 def pred_bb_visualizer(image: np.ndarray, y_pred: tf.Tensor) -> LeapImageWithBBox:
+    # TODO: this modification is temporary and should be removed after updating the loss to match all output logits.
+    #  This fix takes only the regression, confidence and class probabilities.
+    #  Note that inputs are passed to visualizers without the batch dimension
+    y_pred = y_pred[:5 + CONFIG['CLASSES'], :]
     bboxes = []
     decoded_output = decode_outputs(y_pred[None, ...])[0].numpy()
     nms_indices = nms(decoded_output, is_xyxy=False)

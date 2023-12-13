@@ -8,6 +8,7 @@ from yolox.utils.yolo_utils import nms, decode_outputs
 
 
 def confusion_matrix_metric(gt, y_pred):
+    y_pred = y_pred[:, :5 + CONFIG['CLASSES'], :]
     # assumes we get predictions in xyxy format in gt AND reg
     # assumes gt is in xywh form
     id_to_name = CONFIG['class_id_to_name']
