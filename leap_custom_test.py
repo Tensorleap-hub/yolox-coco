@@ -13,7 +13,7 @@ from yolox.utils.yolox_loss import custom_yolox_loss
 def check_integration():
     model_path = 'model/yolox_s.h5'
     model = tf.keras.models.load_model(model_path)
-    batch = 4
+    batch = 1
     responses = subset_images()  # get dataset splits
     training_response = responses[1]
     unlabeled_response = unlabeled_preprocessing_func()

@@ -9,7 +9,7 @@ from code_loader.contract.datasetclasses import PreprocessResponse
 from code_loader.contract.enums import LeapDataType
 from pycocotools.coco import COCO
 
-from yolox.config import dataset_path, unlabeled_dataset_path, CONFIG
+from yolox.config import root_dataset_path, unlabeled_dataset_path, CONFIG, annotation_files_dir
 from yolox.metrics import placeholder_loss, od_metrics_dict
 from yolox.utils.general_utils import extract_and_cache_bboxes, map_class_ids
 from yolox.utils.yolox_loss import custom_yolox_loss
@@ -23,13 +23,13 @@ def subset_images() -> List[PreprocessResponse]:
     This function returns the training and validation datasets in the format expected by tensorleap
     """
     # initialize COCO api for instance annotations
-    train_coco = COCO(os.path.join(dataset_path, CONFIG['train_file']))
+    train_coco = COCO(os.path.join(annotation_files_dir, CONFIG['train_file']))
     imgIds = train_coco.getImgIds()
     imgs = train_coco.loadImgs(imgIds)
     existing_images = set(train_coco.imgs.keys())
     x_train_raw = train_coco.loadImgs(set(imgIds).intersection(existing_images))
 
-    val_coco = COCO(os.path.join(dataset_path, CONFIG['val_file']))
+    val_coco = COCO(os.path.join(annotation_files_dir, CONFIG['val_file']))
     imgIds = val_coco.getImgIds()
     imgs = val_coco.loadImgs(imgIds)
     existing_images = set(val_coco.imgs.keys())
@@ -38,12 +38,12 @@ def subset_images() -> List[PreprocessResponse]:
     train_size = min(len(x_train_raw), CONFIG['TRAIN_SIZE'])
     val_size = min(len(x_val_raw), CONFIG['VAL_SIZE'])
     training_subset = PreprocessResponse(length=train_size, data={'cocofile': train_coco,
-                                                                  'dataset_path': dataset_path,
+                                                                  'dataset_path': root_dataset_path,
                                                                   'samples': x_train_raw,
                                                                   'subdir': 'train'})
 
     validation_subset = PreprocessResponse(length=val_size, data={'cocofile': val_coco,
-                                                                  'dataset_path': dataset_path,
+                                                                  'dataset_path': root_dataset_path,
                                                                   'samples': x_val_raw,
                                                                   'subdir': 'val'})
     return [training_subset, validation_subset]
@@ -56,7 +56,7 @@ def unlabeled_preprocessing_func() -> PreprocessResponse:
     unlabeled_files = os.listdir(unlabeled_dataset_path)[:CONFIG['UNLABELED_SIZE']]
     unlabeled_size = len(unlabeled_files)
     print(unlabeled_size)
-    unlabeled_subset = PreprocessResponse(length=unlabeled_size, data={'unlable_files': unlabeled_files,
+    unlabeled_subset = PreprocessResponse(length=unlabeled_size, data={'unlabeled_files': unlabeled_files,
                                                                        'dataset_path': unlabeled_dataset_path,
                                                                        'subdir': 'unlabeled'})
     return unlabeled_subset
@@ -68,10 +68,10 @@ def input_image(idx: int, data: PreprocessResponse) -> np.ndarray:
     """
     data = data.data
     if data['subdir'] == 'unlabeled':
-        path = os.path.join(data['dataset_path'], data['unlable_files'][idx])
+        path = os.path.join(data['dataset_path'], data['unlabeled_files'][idx])
     else:
         x = data['samples'][idx]
-        path = os.path.join(data['dataset_path'], f"images/{x['file_name']}")
+        path = os.path.join(data['dataset_path'], f"{x['file_name'].replace('../', '')}")
     image = Image.open(path)
     image = image.resize((CONFIG['IMAGE_SIZE'][0], CONFIG['IMAGE_SIZE'][1]), Image.BILINEAR)
     image_array = np.asarray(image)
@@ -178,7 +178,7 @@ def metadata_dict(idx: int, data: PreprocessResponse) -> Dict[str, Union[float, 
     if data.data['subdir'] == 'unlabeled':
         metadatas = {
             "idx": idx,
-            "fname": data.data["unlable_files"][idx],
+            "fname": data.data["unlabeled_files"][idx],
             "origin_width": 0,
             "origin_height": 0,
             "instances_number": 0,

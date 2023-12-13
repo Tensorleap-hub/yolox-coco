@@ -1,5 +1,6 @@
-dataset_path: /Users/ranhomri/tensorleap/data/coco-2017
-unlabeled_dataset_path: /Users/ranhomri/tensorleap/data/coco-2017/unlabeled/
+root_dataset_path: /Users/ranhomri/tensorleap/data/metropolis-data-mock/images
+annotation_files_dir: /Users/ranhomri/tensorleap/data/metropolis-data-mock/annotations
+unlabeled_dataset_path: /Users/ranhomri/tensorleap/data/metropolis-data-mock/unlabeled/
 train_file: train.json
 val_file: val.json
 
