@@ -26,10 +26,6 @@ def get_yolox_od_losses(y_true: tf.Tensor, y_pred: tf.Tensor):
     for i in range(batch):
         confidence_gt = tf.zeros(bbs_count)
         classes_gt = tf.zeros((bbs_count, CONFIG['CLASSES']), tf.float32)
-        # TODO:(verify fix) We have 80 classes [0-79] and the model does not predicts background so I am not sure
-        #  why we need to accommodate for that.
-        # classes_gt = tf.zeros((bbs_count, CONFIG['CLASSES'] - 1), tf.float32)
-        # classes_gt = tf.concat([tf.ones((bbs_count, 1), tf.float32), classes_gt], axis=-1)
 
         y_true_real = y_true[i][y_true[i][..., -1] != CONFIG['BACKGROUND_LABEL']]
         if len(y_true_real) > 0:
@@ -47,8 +43,7 @@ def get_yolox_od_losses(y_true: tf.Tensor, y_pred: tf.Tensor):
                 reg_loss_list[i] = tf.keras.losses.Huber()(matched_bbs, matched_gts_bboxes)
 
                 matched_classes = tf.one_hot(tf.cast(matched_gts_classes, tf.int32),
-                                             CONFIG[
-                                                 'CLASSES'])  # TODO:(verify fix) 1-hot with # classes dim  so no need for background column
+                                             CONFIG['CLASSES'])
                 # compute reg loss
                 positive_ious = tf.gather(max_iou, matched_bbs_idx)
                 confidence_gt = tf.tensor_scatter_nd_update(
