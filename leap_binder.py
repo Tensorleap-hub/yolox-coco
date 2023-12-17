@@ -188,6 +188,10 @@ def metadata_dict(idx: int, data: PreprocessResponse) -> Dict[str, Union[float, 
             "image_min": float(img.min()),
             "image_max": float(img.max()),
             # "number_of_persons": 0,
+            'veh_pose': -1,
+            'veh_type': -1,
+            'plate_state': 'null',
+            'plate_number': 'null'
         }
         return metadatas
 
