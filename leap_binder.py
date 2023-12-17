@@ -75,7 +75,7 @@ def input_image(idx: int, data: PreprocessResponse) -> np.ndarray:
         if '../' in file_name:
             file_name = file_name.replace("../", "")
             data['dataset_path'] = data['dataset_path'].replace('images', '')
-            path = os.path.join(data['dataset_path'], f"{file_name.replace('../', '')}")
+            path = os.path.join(data['dataset_path'], f"{file_name}")
         else:
             path = os.path.join(data['dataset_path'], f"{file_name}")
     image = Image.open(path)
@@ -147,9 +147,9 @@ def get_avg_bb_aspect_ratio(bbs: np.ndarray) -> float:
         return float(0.0)
 
 
-def get_instances_num(bbs: np.ndarray) -> float:
+def get_instances_num(bbs: np.ndarray) -> int:
     valid_bbs = bbs[bbs[..., -1] != CONFIG['BACKGROUND_LABEL']]
-    return float(round(valid_bbs.shape[0], 3))
+    return int(valid_bbs.shape[0])
 
 
 def count_duplicate_bbs(bbs_gt: np.ndarray) -> int:
@@ -162,10 +162,10 @@ def count_duplicate_bbs(bbs_gt: np.ndarray) -> int:
 #     return int(person_gt.shape[0])
 
 
-def count_small_bbs(bboxes: np.ndarray) -> float:
+def count_small_bbs(bboxes: np.ndarray) -> int:
     obj_boxes = bboxes[bboxes[..., -1] == 0]
     areas = obj_boxes[..., 2] * obj_boxes[..., 3]
-    return float(round(len(areas[areas < CONFIG['SMALL_BBS_TH']]), 3))
+    return len(areas[areas < CONFIG['SMALL_BBS_TH']])
 
 
 def metadata_dict(idx: int, data: PreprocessResponse) -> Dict[str, Union[float, int, str]]:
@@ -194,7 +194,7 @@ def metadata_dict(idx: int, data: PreprocessResponse) -> Dict[str, Union[float, 
     bbs = get_bbs(idx, data)
     metadatas = {
         "idx": idx,
-        "fname": get_fname(idx, data),
+        "fname": str(get_fname(idx, data)),
         "origin_width": get_original_width(idx, data),
         "origin_height": get_original_height(idx, data),
         "instances_number": get_instances_num(bbs),
@@ -209,6 +209,38 @@ def metadata_dict(idx: int, data: PreprocessResponse) -> Dict[str, Union[float, 
         "image_max": float(img.max()),
         # "number_of_persons": count_persons(bbs),
     }
+
+    # add extra annotations as metadata
+    anns = get_annotation_coco(idx, data.data)
+
+    if len(anns) == 1:
+        anns = anns[0]
+        if anns['veh_pose'] is not None:  # assuming coco loads `null` values as None
+            veh_pose = int(anns['veh_pose'])
+        else:
+            veh_pose = -1
+        if anns['veh_type'] is not None:
+            veh_type = int(anns['veh_type'])
+        else:
+            veh_type = -1
+        if anns['plate_state'] is not None:
+            plate_state = str(anns['plate_state'])
+        else:
+            plate_state = 'null'
+        if anns['plate_number'] is not None:
+            plate_number = str(anns['plate_number'])
+        else:
+            plate_number = 'null'
+        metadatas['veh_pose'] = veh_pose
+        metadatas['veh_type'] = veh_type
+        metadatas['plate_state'] = plate_state
+        metadatas['plate_number'] = plate_number
+    else:
+        metadatas['veh_pose'] = -1
+        metadatas['veh_type'] = -1
+        metadatas['plate_state'] = 'null'
+        metadatas['plate_number'] = 'null'
+
     return metadatas
 
 

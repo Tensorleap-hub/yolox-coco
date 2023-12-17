@@ -23,12 +23,18 @@ def decode_outputs(pred):
     strides = tf.concat(strides, axis=1)
     strides = tf.cast(strides, tf.float32)
 
-    decoded_outputs = tf.concat([
-        (pred[..., 0:2] + grids) * strides,  # x, y
-        tf.exp(pred[..., 2:4]) * strides,  # w, h
-        pred[..., 4:]  # conf + classes
-    ], axis=-1)
-
+    if CONFIG['predict_log_wh']:
+        decoded_outputs = tf.concat([
+            (pred[..., 0:2] + grids) * strides,  # x, y
+            tf.exp(pred[..., 2:4]) * strides,  # w, h
+            pred[..., 4:]  # conf + classes
+        ], axis=-1)
+    else:
+        decoded_outputs = tf.concat([
+            (pred[..., 0:2] + grids) * strides,  # x, y
+            pred[..., 2:4] * strides,  # w, h
+            pred[..., 4:]  # conf + classes
+        ], axis=-1)
     return decoded_outputs
 
 

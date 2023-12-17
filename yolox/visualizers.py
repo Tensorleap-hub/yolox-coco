@@ -33,7 +33,6 @@ def pred_bb_visualizer(image: np.ndarray, y_pred: tf.Tensor) -> LeapImageWithBBo
                 confidence=confidence,
                 label=CONFIG['class_id_to_name'].get(predicted_classes[i].astype(int))
             ))
-    # image = (image - np.min(image)) / np.max(image - np.min(image)) * 255
     return LeapImageWithBBox(image.astype(np.uint8), bboxes)
 
 
