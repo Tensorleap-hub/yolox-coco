@@ -71,7 +71,13 @@ def input_image(idx: int, data: PreprocessResponse) -> np.ndarray:
         path = os.path.join(data['dataset_path'], data['unlabeled_files'][idx])
     else:
         x = data['samples'][idx]
-        path = os.path.join(data['dataset_path'], f"{x['file_name'].replace('../', '')}")
+        file_name: str = x['file_name']
+        if '../' in file_name:
+            file_name = file_name.replace("../", "")
+            data['dataset_path'] = data['dataset_path'].replace('images', '')
+            path = os.path.join(data['dataset_path'], f"{file_name.replace('../', '')}")
+        else:
+            path = os.path.join(data['dataset_path'], f"{file_name}")
     image = Image.open(path)
     image = image.resize((CONFIG['IMAGE_SIZE'][0], CONFIG['IMAGE_SIZE'][1]), Image.BILINEAR)
     image_array = np.asarray(image)
@@ -146,7 +152,6 @@ def get_instances_num(bbs: np.ndarray) -> float:
     return float(round(valid_bbs.shape[0], 3))
 
 
-
 def count_duplicate_bbs(bbs_gt: np.ndarray) -> int:
     real_gt = bbs_gt[bbs_gt[..., 4] != CONFIG['BACKGROUND_LABEL']]
     return int(real_gt.shape[0] != np.unique(real_gt, axis=0).shape[0])
@@ -217,7 +222,11 @@ leap_binder.set_input(input_image, 'images')
 leap_binder.set_ground_truth(get_bbs, 'bbs')
 # set prediction (object)
 leap_binder.add_prediction(name='predictions',
-                           labels=["xc", "yc", "w", "h"] + ["obj"] + list(CONFIG['class_id_to_name'].values()),
+                           labels=["xc", "yc", "w", "h"] +  # bounding box coords
+                                  ["obj"] +  # object confidence
+                                  list(CONFIG['class_id_to_name'].values()) +  # classes confidence
+                                  ['0', 'Front', 'Back'] +  # orientation
+                                  [str(i) for i in range(8)],
                            channel_dim=1)
 # set custom loss
 leap_binder.add_custom_loss(placeholder_loss, 'zero_loss')

@@ -1,12 +1,14 @@
-root_dataset_path: /data/training_datasets/detection
-annotation_files_dir: /data/training_datasets/detection/annotations
-unlabeled_dataset_path: /data/training_datasets/detection/unlabeled_data
+root_dataset_path: /Users/ranhomri/tensorleap/data/metropolis-data-mock/images
+annotation_files_dir: /Users/ranhomri/tensorleap/data/metropolis-data-mock/annotations/2023-04-19
+unlabeled_dataset_path: /Users/ranhomri/tensorleap/data/metropolis-data-mock/unlabeled_data
 train_file: subset_train_2_det_coco_2023-04-19.json
 val_file: val_2_det_coco_2023-04-19.json
 
 TRAIN_SIZE: 8
 VAL_SIZE: 8
 UNLABELED_SIZE: 8
+
+gt_xy_center: False
 
 IOU_TH: 0.3
 CLASSES: 3
