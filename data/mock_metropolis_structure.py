@@ -5,8 +5,9 @@ import numpy as np
 from yolox.config import annotation_files_dir, CONFIG
 
 train_ann_path = os.path.join(annotation_files_dir, CONFIG['train_file'])
+val_ann_path = os.path.join(annotation_files_dir, CONFIG['val_file'])
 
-for path in [train_ann_path]:
+for path in [val_ann_path]:
     with open(path, 'r') as f:
         ann_file = load(f)
 
