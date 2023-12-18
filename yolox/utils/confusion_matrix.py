@@ -8,7 +8,7 @@ from yolox.utils.yolo_utils import nms, decode_outputs
 
 
 def confusion_matrix_metric(gt, y_pred):
-    y_pred = y_pred[:, :5 + CONFIG['CLASSES'], :]
+    y_pred = y_pred[:, :5 + CONFIG['CLASSES'], :]  # take only boxes, confidence and classes
     # assumes we get predictions in xyxy format in gt AND reg
     # assumes gt is in xywh form
     id_to_name = CONFIG['class_id_to_name']
@@ -24,7 +24,7 @@ def confusion_matrix_metric(gt, y_pred):
         confusion_matrix_elements = []
         if len(batch_outputs) != 0:
             ious = jaccard(xywh_to_xyxy_format(batch_outputs[:, :4]) / CONFIG['IMAGE_SIZE'][0],
-                           xywh_to_xyxy_format(gt[batch_i, :, :-1])).numpy()  # (#bb_predicted,#gt)
+                           xywh_to_xyxy_format(gt[batch_i, :, :CONFIG['GT_CLS_IDX']])).numpy()  # (#bb_predicted,#gt)
             prediction_detected = np.any((ious > threshold), axis=1)
             max_iou_ind = np.argmax(ious, axis=1)
             for i, prediction in enumerate(prediction_detected):

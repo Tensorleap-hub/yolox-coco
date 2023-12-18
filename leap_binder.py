@@ -101,22 +101,6 @@ def get_bbs(idx: int, data: PreprocessResponse) -> np.ndarray:
     return bboxes
 
 
-def get_veh_pose(idx: int, data: PreprocessResponse) -> int:
-    anns = get_annotation_coco(idx, data)
-    pose = 0
-    if anns['veh_pose'] is not None:
-        pose = int(anns['veh_pose'])
-    return pose
-
-
-def get_veh_type(idx: int, data: PreprocessResponse) -> int:
-    anns = get_annotation_coco(idx, data)
-    vtype = 0
-    if anns['veh_type'] is not None:
-        vtype = int(anns['veh_type'])
-    return vtype
-
-
 def get_dummy_gt(idx: int, data: PreprocessResponse) -> np.ndarray:
     return np.array([0])
 
@@ -146,7 +130,7 @@ def bbox_num(bbs: np.ndarray) -> int:
 
 
 def get_avg_bb_area(bbs: np.ndarray) -> float:
-    valid_bbs = bbs[bbs[..., -1] != CONFIG['BACKGROUND_LABEL']]
+    valid_bbs = bbs[bbs[..., CONFIG['GT_CLS_IDX']] != CONFIG['BACKGROUND_LABEL']]
     if len(valid_bbs) > 0:
         areas = valid_bbs[:, 2] * valid_bbs[:, 3]
         return float(round(areas.mean(), 3))
@@ -155,7 +139,7 @@ def get_avg_bb_area(bbs: np.ndarray) -> float:
 
 
 def get_avg_bb_aspect_ratio(bbs: np.ndarray) -> float:
-    valid_bbs = bbs[bbs[..., -1] != CONFIG['BACKGROUND_LABEL']]
+    valid_bbs = bbs[bbs[..., CONFIG['GT_CLS_IDX']] != CONFIG['BACKGROUND_LABEL']]
     if len(valid_bbs) > 0:
         aspect_ratios = valid_bbs[:, 2] / valid_bbs[:, 3]
         return float(round(aspect_ratios.mean(), 3))
@@ -164,12 +148,12 @@ def get_avg_bb_aspect_ratio(bbs: np.ndarray) -> float:
 
 
 def get_instances_num(bbs: np.ndarray) -> int:
-    valid_bbs = bbs[bbs[..., -1] != CONFIG['BACKGROUND_LABEL']]
+    valid_bbs = bbs[bbs[..., CONFIG['GT_CLS_IDX']] != CONFIG['BACKGROUND_LABEL']]
     return int(valid_bbs.shape[0])
 
 
 def count_duplicate_bbs(bbs_gt: np.ndarray) -> int:
-    real_gt = bbs_gt[bbs_gt[..., 4] != CONFIG['BACKGROUND_LABEL']]
+    real_gt = bbs_gt[bbs_gt[..., CONFIG['GT_CLS_IDX']] != CONFIG['BACKGROUND_LABEL']]
     return int(real_gt.shape[0] != np.unique(real_gt, axis=0).shape[0])
 
 
@@ -179,7 +163,7 @@ def count_duplicate_bbs(bbs_gt: np.ndarray) -> int:
 
 
 def count_small_bbs(bboxes: np.ndarray) -> int:
-    obj_boxes = bboxes[bboxes[..., -1] == 0]
+    obj_boxes = bboxes[bboxes[..., CONFIG['GT_CLS_IDX']] != CONFIG['BACKGROUND_LABEL']]
     areas = obj_boxes[..., 2] * obj_boxes[..., 3]
     return len(areas[areas < CONFIG['SMALL_BBS_TH']])
 
@@ -272,8 +256,6 @@ leap_binder.set_unlabeled_data_preprocess(unlabeled_preprocessing_func)
 # set input and gt
 leap_binder.set_input(input_image, 'images')
 leap_binder.set_ground_truth(get_bbs, 'bbs')
-leap_binder.set_ground_truth(get_veh_pose, 'veh_pose')
-leap_binder.set_ground_truth(get_veh_type, 'veh_type')
 # set prediction (object)
 leap_binder.add_prediction(name='predictions',
                            labels=["xc", "yc", "w", "h"] +  # bounding box coords
