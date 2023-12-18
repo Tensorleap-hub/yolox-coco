@@ -5,6 +5,7 @@ from leap_binder import (
 from yolox.config import CONFIG
 from yolox.metrics import od_metrics_dict
 from yolox.utils.confusion_matrix import confusion_matrix_metric
+from yolox.utils.custom_layers import MockNClass
 from yolox.utils.general_utils import draw_image_with_boxes
 from yolox.visualizers import gt_bb_decoder, pred_bb_visualizer
 from yolox.utils.yolox_loss import custom_yolox_loss
@@ -13,7 +14,7 @@ from yolox.utils.yolox_loss import custom_yolox_loss
 def check_integration():
     model_path = 'model/yolox_s.h5'
     model = tf.keras.models.load_model(model_path)
-    batch = 8
+    batch = 4
     responses = subset_images()  # get dataset splits
     training_response = responses[0]
     unlabeled_response = unlabeled_preprocessing_func()
@@ -35,6 +36,7 @@ def check_integration():
     y_pred = model([input_img_tf])  # infer and get model prediction
     dummy_y = tf.random.uniform((batch, 11, y_pred.shape[-1]), 0, 1)
     y_pred = tf.concat([y_pred, dummy_y], 1)
+    # y_pred = MockNClass(19)(y_pred)
     loss = custom_yolox_loss(y_true_bbs, y_pred)
     od_metrics = od_metrics_dict(y_true_bbs, y_pred)
 

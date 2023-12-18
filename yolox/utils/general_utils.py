@@ -38,15 +38,15 @@ def bb_array_to_object(bb_array: Union[NDArray[float], tf.Tensor], iscornercoded
     if len(bb_array.shape) == 3:
         bb_array = bb_array.reshape(-1, bb_array.shape[-1])
     for i in range(bb_array.shape[0]):
-        if bb_array[i][-1] != bg_label:
+        if bb_array[i][CONFIG['GT_CLS_IDX']] != bg_label:
             if iscornercoded:
-                x, y, w, h = xyxy_to_xywh_format(bb_array[i][1:5])
+                x, y, w, h = xyxy_to_xywh_format(bb_array[i][:4])
                 # unormalize to image dimensions
             else:
                 x, y = bb_array[i][0], bb_array[i][1]
                 w, h = bb_array[i][2], bb_array[i][3]
             conf = 1 if is_gt else bb_array[i][0]
-            label_name = original_label_to_name.get(bb_array[i][min(5, len(bb_array[i]) - 1)])
+            label_name = original_label_to_name.get(bb_array[i][4])
             curr_bb = BoundingBox(x=x, y=y, width=w, height=h, confidence=conf,
                                   label=str(label_name))
 

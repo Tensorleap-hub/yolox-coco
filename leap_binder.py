@@ -11,6 +11,7 @@ from pycocotools.coco import COCO
 
 from yolox.config import root_dataset_path, unlabeled_dataset_path, CONFIG, annotation_files_dir
 from yolox.metrics import placeholder_loss, od_metrics_dict
+from yolox.utils.custom_layers import MockNClass
 from yolox.utils.general_utils import extract_and_cache_bboxes, map_class_ids
 from yolox.utils.yolox_loss import custom_yolox_loss
 from yolox.visualizers import gt_bb_decoder, pred_bb_visualizer
@@ -274,5 +275,7 @@ leap_binder.add_custom_metric(confusion_matrix_metric, "confusion matrix")
 leap_binder.set_metadata(metadata_dict, name='metadata')
 # custom metrics
 leap_binder.add_custom_metric(od_metrics_dict, 'od_metrics')
+
+leap_binder.set_custom_layer(MockNClass, 'slice_n_classes')
 if __name__ == '__main__':
     leap_binder.check()
