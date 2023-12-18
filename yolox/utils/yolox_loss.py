@@ -1,3 +1,5 @@
+from typing import Tuple
+
 import tensorflow as tf
 from code_loader.helpers.detection.utils import xywh_to_xyxy_format
 from code_loader.helpers.detection.utils import jaccard
@@ -6,12 +8,12 @@ from yolox.config import CONFIG
 from yolox.utils.yolo_utils import decode_outputs
 
 
-def custom_yolox_loss(y_true: tf.Tensor, y_pred: tf.Tensor):
+def custom_yolox_loss(y_true: tf.Tensor, y_pred: tf.Tensor) -> tf.Tensor:
     conf_loss, class_loss, reg_loss, pose_loss, type_loss = get_yolox_od_losses(y_true, y_pred)
     return conf_loss + class_loss + reg_loss + pose_loss + type_loss
 
 
-def get_yolox_od_losses(y_true: tf.Tensor, y_pred: tf.Tensor):
+def get_yolox_od_losses(y_true: tf.Tensor, y_pred: tf.Tensor) -> Tuple:
     decoded_preds = decode_outputs(y_pred)  # in absolute units
     bboxes = decoded_preds[:, :, :4]
     bboxes /= [*CONFIG['IMAGE_SIZE'][::-1], *CONFIG['IMAGE_SIZE'][::-1]]
