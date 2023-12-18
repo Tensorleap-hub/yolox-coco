@@ -236,10 +236,10 @@ def extract_and_cache_bboxes(idx: int, data: Dict) -> np.ndarray:
             class_id = ann['category_id']
             veh_type = 0
             veh_pose = 0
-            if anns['veh_type'] is not None:
-                veh_type = int(anns['veh_type'])
-            if anns['veh_pose'] is not None:
-                veh_pose = int(anns['veh_pose'])
+            if ann['veh_type'] is not None:
+                veh_type = int(ann['veh_type'])
+            if ann['veh_pose'] is not None:
+                veh_pose = int(ann['veh_pose'])
             bbox = np.expand_dims(ann['bbox'], 0)[0].astype(np.float32)
             if not CONFIG['gt_xy_center']:
                 bbox[0] += bbox[2] / 2.
@@ -258,8 +258,8 @@ def map_class_ids(bboxes: np.ndarray) -> np.ndarray:
     if mapping_dict is None:
         return bboxes
     else:
-        mapped_bboxes_ids = np.vectorize(mapping_dict.get)(bboxes[:, -1].astype(int))
-        bboxes[:, -1] = mapped_bboxes_ids
+        mapped_bboxes_ids = np.vectorize(mapping_dict.get)(bboxes[:, CONFIG['GT_CLS_IDX']].astype(int))
+        bboxes[:, CONFIG['GT_CLS_IDX']] = mapped_bboxes_ids
         return bboxes
 
 

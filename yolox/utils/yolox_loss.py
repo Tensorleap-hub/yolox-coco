@@ -66,11 +66,16 @@ def get_yolox_od_losses(y_true: tf.Tensor, y_pred: tf.Tensor):
                     type_gt, matched_bbs_idx[..., None], matched_type
                 )
             class_loss = tf.keras.losses.CategoricalCrossentropy(from_logits=False)(classes_gt,
-                                                                                    decoded_preds[i, ..., 5: 5 + CONFIG['CLASSES']])
+                                                                                    decoded_preds[i, ...,
+                                                                                    5: 5 + CONFIG['CLASSES']])
             pose_loss = tf.keras.losses.CategoricalCrossentropy(from_logits=False)(pose_gt,
-                                                                                   decoded_preds[i, ..., 5 + CONFIG['CLASSES']: 5 + CONFIG['CLASSES'] + CONFIG['POSE_CLS']])
+                                                                                   decoded_preds[i, ...,
+                                                                                   5 + CONFIG['CLASSES']: 5 + CONFIG[
+                                                                                       'CLASSES'] + CONFIG['POSE_CLS']])
             type_loss = tf.keras.losses.CategoricalCrossentropy(from_logits=False)(type_gt,
-                                                                                   decoded_preds[i, ..., 5 + CONFIG['CLASSES'] + CONFIG['POSE_CLS']:])
+                                                                                   decoded_preds[i, ...,
+                                                                                   5 + CONFIG['CLASSES'] + CONFIG[
+                                                                                       'POSE_CLS']:])
             confidence_loss = tf.keras.losses.MeanSquaredError()(confidence_gt, decoded_preds[i, ..., 4])
 
             conf_loss_list.append(confidence_loss)
