@@ -101,6 +101,22 @@ def get_bbs(idx: int, data: PreprocessResponse) -> np.ndarray:
     return bboxes
 
 
+def get_veh_pose(idx: int, data: PreprocessResponse) -> int:
+    anns = get_annotation_coco(idx, data)
+    pose = 0
+    if anns['veh_pose'] is not None:
+        pose = int(anns['veh_pose'])
+    return pose
+
+
+def get_veh_type(idx: int, data: PreprocessResponse) -> int:
+    anns = get_annotation_coco(idx, data)
+    vtype = 0
+    if anns['veh_type'] is not None:
+        vtype = int(anns['veh_type'])
+    return vtype
+
+
 def get_dummy_gt(idx: int, data: PreprocessResponse) -> np.ndarray:
     return np.array([0])
 
@@ -256,6 +272,8 @@ leap_binder.set_unlabeled_data_preprocess(unlabeled_preprocessing_func)
 # set input and gt
 leap_binder.set_input(input_image, 'images')
 leap_binder.set_ground_truth(get_bbs, 'bbs')
+leap_binder.set_ground_truth(get_veh_pose, 'veh_pose')
+leap_binder.set_ground_truth(get_veh_type, 'veh_type')
 # set prediction (object)
 leap_binder.add_prediction(name='predictions',
                            labels=["xc", "yc", "w", "h"] +  # bounding box coords

@@ -222,18 +222,24 @@ def pad_bboxes_to_same_length(array1, array2):
         return array1, array2
 
 
-def extract_and_cache_bboxes(idx: int, data: Dict):
+def extract_and_cache_bboxes(idx: int, data: Dict) -> np.ndarray:
     x = data['samples'][idx]
     coco = data['cocofile']
     ann_ids = coco.getAnnIds(imgIds=x['id'])
     anns = coco.loadAnns(ann_ids)
-    bboxes = np.zeros([CONFIG['MAX_BB_PER_IMAGE'], 5], dtype=np.float32)
+    bboxes = np.zeros([CONFIG['MAX_BB_PER_IMAGE'], 7], dtype=np.float32)
     max_anns = min(CONFIG['MAX_BB_PER_IMAGE'], len(anns))
     for i in range(max_anns):
         ann = anns[i]
         if isinstance(ann['bbox'], list):
             img_size = (x['height'], x['width'])
             class_id = ann['category_id']
+            veh_type = 0
+            veh_pose = 0
+            if anns['veh_type'] is not None:
+                veh_type = int(anns['veh_type'])
+            if anns['veh_pose'] is not None:
+                veh_pose = int(anns['veh_pose'])
             bbox = np.expand_dims(ann['bbox'], 0)[0].astype(np.float32)
             if not CONFIG['gt_xy_center']:
                 bbox[0] += bbox[2] / 2.
@@ -241,8 +247,10 @@ def extract_and_cache_bboxes(idx: int, data: Dict):
             bbox /= np.array((img_size[1], img_size[0], img_size[1], img_size[0])).astype(np.float32)
             bboxes[i, :4] = bbox
             bboxes[i, 4] = class_id
+            bboxes[i, 5] = veh_pose
+            bboxes[i, 6] = veh_type
     bboxes[max_anns:, 4] = CONFIG['BACKGROUND_LABEL']
-    return bboxes
+    return bboxes  # [x, y, w, h, cls, pose, type]
 
 
 def map_class_ids(bboxes: np.ndarray) -> np.ndarray:

@@ -10,9 +10,9 @@ for path in [train_ann_path]:
         ann_file = load(f)
 
     # Edit all file names
-    for i, image in enumerate(ann_file["images"]):
-        if i % 50 == 0:
-            image["file_name"] = f"../../true_negative_images/{image['file_name']}"
+    # for i, image in enumerate(ann_file["images"]):
+    #     if i % 50 == 0:
+    #         image["file_name"] = f"../../true_negative_images/{image['file_name']}"
 
-    with open(path, 'w') as f:
-        dump(ann_file, f)
+    # with open(path, 'w') as f:
+    #     dump(ann_file, f)

@@ -11,8 +11,15 @@ UNLABELED_SIZE: 8
 gt_xy_center: False
 predict_log_wh: True
 
-IOU_TH: 0.3
 CLASSES: 3
+POSE_CLS: 3
+TYPE_CLS: 8
+
+GT_CLS_IDX: 4
+GT_POSE_IDX: 5
+GT_TYPE_IDX: 6
+
+IOU_TH: 0.3
 CONF_THRESH: 0.5
 TOP_K: 10
 IMAGE_SIZE: [640, 640]
