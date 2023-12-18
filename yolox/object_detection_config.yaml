@@ -11,7 +11,7 @@ UNLABELED_SIZE: 8
 gt_xy_center: False
 predict_log_wh: True
 
-CLASSES: 3
+CLASSES: 80
 POSE_CLS: 3
 TYPE_CLS: 8
 

@@ -74,8 +74,7 @@ def input_image(idx: int, data: PreprocessResponse) -> np.ndarray:
         file_name: str = x['file_name']
         if '../' in file_name:
             file_name = file_name.replace("../", "")
-            data['dataset_path'] = data['dataset_path'].replace('images', '')
-            path = os.path.join(data['dataset_path'], f"{file_name}")
+            path = os.path.join(data['dataset_path'].replace('images', ''), f"{file_name}")
         else:
             path = os.path.join(data['dataset_path'], f"{file_name}")
     image = Image.open(path)
@@ -125,7 +124,7 @@ def get_original_height(index: int, subset: PreprocessResponse) -> int:
 
 
 def bbox_num(bbs: np.ndarray) -> int:
-    number_of_bb = np.count_nonzero(bbs[..., -1] != CONFIG['BACKGROUND_LABEL'])
+    number_of_bb = np.count_nonzero(bbs[..., CONFIG['GT_CLS_IDX']] != CONFIG['BACKGROUND_LABEL'])
     return int(number_of_bb)
 
 

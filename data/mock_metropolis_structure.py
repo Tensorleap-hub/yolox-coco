@@ -1,5 +1,6 @@
 import os
 from json import load, dump
+import numpy as np
 
 from yolox.config import annotation_files_dir, CONFIG
 
@@ -14,5 +15,15 @@ for path in [train_ann_path]:
     #     if i % 50 == 0:
     #         image["file_name"] = f"../../true_negative_images/{image['file_name']}"
 
-    # with open(path, 'w') as f:
-    #     dump(ann_file, f)
+    # add metropolis annotations
+    for i, ann in enumerate(ann_file["annotations"]):
+        ann["veh_pose"] = np.random.randint(0, 3)
+        ann["veh_type"] = np.random.randint(0, 8)
+        ann["plate_state"] = 'CA'
+        ann["plate_number"] = "example"
+        if i % 6 == 0:
+            ann["plate_state"] = None
+            ann["plate_number"] = None
+
+    with open(path, 'w') as f:
+        dump(ann_file, f)
