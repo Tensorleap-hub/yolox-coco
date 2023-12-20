@@ -15,7 +15,8 @@ def pred_bb_visualizer(image: np.ndarray, y_pred: tf.Tensor) -> LeapImageWithBBo
     #  Note that inputs are passed to visualizers without the batch dimension
     y_pred = y_pred[:5 + CONFIG['CLASSES'], :]
     bboxes = []
-    decoded_output = decode_outputs(y_pred[None, ...])[0].numpy()
+    decoded_output = y_pred.numpy()
+    # decoded_output = decode_outputs(y_pred[None, ...])[0].numpy()
     nms_indices = nms(decoded_output, is_xyxy=False)
     decoded_output = decoded_output[nms_indices, :]
     xywh = decoded_output[..., :4]

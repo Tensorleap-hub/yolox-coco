@@ -14,8 +14,8 @@ def custom_yolox_loss(y_true: tf.Tensor, y_pred: tf.Tensor) -> tf.Tensor:
 
 
 def get_yolox_od_losses(y_true: tf.Tensor, y_pred: tf.Tensor) -> Tuple:
-    decoded_preds = decode_outputs(y_pred)  # in absolute units
-    bboxes = decoded_preds[:, :, :4]
+    # decoded_preds = decode_outputs(y_pred)  # in absolute units
+    bboxes = y_pred[:, :, :4]
     bboxes /= [*CONFIG['IMAGE_SIZE'][::-1], *CONFIG['IMAGE_SIZE'][::-1]]
     batch = y_true.shape[0]
     bbs_count = bboxes.shape[1]

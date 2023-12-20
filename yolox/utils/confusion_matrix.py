@@ -13,7 +13,8 @@ def confusion_matrix_metric(gt, y_pred):
     # assumes gt is in xywh form
     id_to_name = CONFIG['class_id_to_name']
     threshold = CONFIG['IOU_TH']
-    outputs = decode_outputs(y_pred).numpy()
+    # outputs = decode_outputs(y_pred).numpy()
+    outputs = y_pred.numpy()
     ret = []
     for batch_i in range(len(outputs)):
         above_conf_indices = outputs[batch_i, :, 4] > CONFIG['CONF_THRESH']
