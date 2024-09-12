@@ -9,7 +9,7 @@ from code_loader.contract.datasetclasses import PreprocessResponse
 from code_loader.contract.enums import LeapDataType
 from pycocotools.coco import COCO
 
-from yolox.config import dataset_path, unlabeled_dataset_path, CONFIG
+from yolox.config import root_dataset_path, unlabeled_dataset_path, CONFIG, annotation_files_dir
 from yolox.metrics import placeholder_loss, od_metrics_dict
 from yolox.utils.general_utils import extract_and_cache_bboxes, map_class_ids
 from yolox.utils.yolox_loss import custom_yolox_loss
@@ -23,13 +23,13 @@ def subset_images() -> List[PreprocessResponse]:
     This function returns the training and validation datasets in the format expected by tensorleap
     """
     # initialize COCO api for instance annotations
-    train_coco = COCO(os.path.join(dataset_path, CONFIG['train_file']))
+    train_coco = COCO(os.path.join(annotation_files_dir, CONFIG['train_file']))
     imgIds = train_coco.getImgIds()
     imgs = train_coco.loadImgs(imgIds)
     existing_images = set(train_coco.imgs.keys())
     x_train_raw = train_coco.loadImgs(set(imgIds).intersection(existing_images))
 
-    val_coco = COCO(os.path.join(dataset_path, CONFIG['val_file']))
+    val_coco = COCO(os.path.join(annotation_files_dir, CONFIG['val_file']))
     imgIds = val_coco.getImgIds()
     imgs = val_coco.loadImgs(imgIds)
     existing_images = set(val_coco.imgs.keys())
@@ -38,12 +38,12 @@ def subset_images() -> List[PreprocessResponse]:
     train_size = min(len(x_train_raw), CONFIG['TRAIN_SIZE'])
     val_size = min(len(x_val_raw), CONFIG['VAL_SIZE'])
     training_subset = PreprocessResponse(length=train_size, data={'cocofile': train_coco,
-                                                                  'dataset_path': dataset_path,
+                                                                  'dataset_path': root_dataset_path,
                                                                   'samples': x_train_raw,
                                                                   'subdir': 'train'})
 
     validation_subset = PreprocessResponse(length=val_size, data={'cocofile': val_coco,
-                                                                  'dataset_path': dataset_path,
+                                                                  'dataset_path': root_dataset_path,
                                                                   'samples': x_val_raw,
                                                                   'subdir': 'val'})
     return [training_subset, validation_subset]
@@ -56,7 +56,7 @@ def unlabeled_preprocessing_func() -> PreprocessResponse:
     unlabeled_files = os.listdir(unlabeled_dataset_path)[:CONFIG['UNLABELED_SIZE']]
     unlabeled_size = len(unlabeled_files)
     print(unlabeled_size)
-    unlabeled_subset = PreprocessResponse(length=unlabeled_size, data={'unlable_files': unlabeled_files,
+    unlabeled_subset = PreprocessResponse(length=unlabeled_size, data={'unlabeled_files': unlabeled_files,
                                                                        'dataset_path': unlabeled_dataset_path,
                                                                        'subdir': 'unlabeled'})
     return unlabeled_subset
@@ -68,10 +68,16 @@ def input_image(idx: int, data: PreprocessResponse) -> np.ndarray:
     """
     data = data.data
     if data['subdir'] == 'unlabeled':
-        path = os.path.join(data['dataset_path'], data['unlable_files'][idx])
+        path = os.path.join(data['dataset_path'], data['unlabeled_files'][idx])
     else:
         x = data['samples'][idx]
-        path = os.path.join(data['dataset_path'], f"images/{x['file_name']}")
+        file_name: str = x['file_name']
+        if '../' in file_name:
+            file_name = file_name.replace("../", "")
+            data['dataset_path'] = data['dataset_path'].replace('images', '')
+            path = os.path.join(data['dataset_path'], f"{file_name}")
+        else:
+            path = os.path.join(data['dataset_path'], f"{file_name}")
     image = Image.open(path)
     image = image.resize((CONFIG['IMAGE_SIZE'][0], CONFIG['IMAGE_SIZE'][1]), Image.BILINEAR)
     image_array = np.asarray(image)
@@ -124,7 +130,7 @@ def bbox_num(bbs: np.ndarray) -> int:
 
 
 def get_avg_bb_area(bbs: np.ndarray) -> float:
-    valid_bbs = bbs[bbs[..., -1] != CONFIG['BACKGROUND_LABEL']]
+    valid_bbs = bbs[bbs[..., CONFIG['GT_CLS_IDX']] != CONFIG['BACKGROUND_LABEL']]
     if len(valid_bbs) > 0:
         areas = valid_bbs[:, 2] * valid_bbs[:, 3]
         return float(round(areas.mean(), 3))
@@ -133,7 +139,7 @@ def get_avg_bb_area(bbs: np.ndarray) -> float:
 
 
 def get_avg_bb_aspect_ratio(bbs: np.ndarray) -> float:
-    valid_bbs = bbs[bbs[..., -1] != CONFIG['BACKGROUND_LABEL']]
+    valid_bbs = bbs[bbs[..., CONFIG['GT_CLS_IDX']] != CONFIG['BACKGROUND_LABEL']]
     if len(valid_bbs) > 0:
         aspect_ratios = valid_bbs[:, 2] / valid_bbs[:, 3]
         return float(round(aspect_ratios.mean(), 3))
@@ -141,35 +147,25 @@ def get_avg_bb_aspect_ratio(bbs: np.ndarray) -> float:
         return float(0.0)
 
 
-def get_instances_num(bbs: np.ndarray) -> float:
-    valid_bbs = bbs[bbs[..., -1] != CONFIG['BACKGROUND_LABEL']]
-    return float(round(valid_bbs.shape[0], 3))
-
-
-# def get_obj_bbox_occlusions_count(img: np.ndarray, bboxes: np.ndarray, calc_avg_flag=False) -> float:
-#     occlusion_threshold = 0.2  # Example threshold value
-#     occlusions_count = count_obj_bbox_occlusions(img, bboxes, occlusion_threshold, calc_avg_flag)
-#     return occlusions_count
-#
-#
-# def get_obj_bbox_occlusions_avg(img: np.ndarray, bboxes: np.ndarray) -> float:
-#     return get_obj_bbox_occlusions_count(img, bboxes, calc_avg_flag=True)
+def get_instances_num(bbs: np.ndarray) -> int:
+    valid_bbs = bbs[bbs[..., CONFIG['GT_CLS_IDX']] != CONFIG['BACKGROUND_LABEL']]
+    return int(valid_bbs.shape[0])
 
 
 def count_duplicate_bbs(bbs_gt: np.ndarray) -> int:
-    real_gt = bbs_gt[bbs_gt[..., 4] != CONFIG['BACKGROUND_LABEL']]
+    real_gt = bbs_gt[bbs_gt[..., CONFIG['GT_CLS_IDX']] != CONFIG['BACKGROUND_LABEL']]
     return int(real_gt.shape[0] != np.unique(real_gt, axis=0).shape[0])
 
 
-def count_persons(bbs_gt: np.ndarray) -> int:
-    person_gt = bbs_gt[bbs_gt[..., 4] == CONFIG['class_name_to_id']['person']]
-    return int(person_gt.shape[0])
+# def count_persons(bbs_gt: np.ndarray) -> int:
+#     person_gt = bbs_gt[bbs_gt[..., 4] == CONFIG['class_name_to_id']['person']]
+#     return int(person_gt.shape[0])
 
 
-def count_small_bbs(bboxes: np.ndarray) -> float:
-    obj_boxes = bboxes[bboxes[..., -1] == 0]
+def count_small_bbs(bboxes: np.ndarray) -> int:
+    obj_boxes = bboxes[bboxes[..., CONFIG['GT_CLS_IDX']] != CONFIG['BACKGROUND_LABEL']]
     areas = obj_boxes[..., 2] * obj_boxes[..., 3]
-    return float(round(len(areas[areas < CONFIG['SMALL_BBS_TH']]), 3))
+    return len(areas[areas < CONFIG['SMALL_BBS_TH']])
 
 
 def metadata_dict(idx: int, data: PreprocessResponse) -> Dict[str, Union[float, int, str]]:
@@ -178,7 +174,7 @@ def metadata_dict(idx: int, data: PreprocessResponse) -> Dict[str, Union[float, 
     if data.data['subdir'] == 'unlabeled':
         metadatas = {
             "idx": idx,
-            "fname": data.data["unlable_files"][idx],
+            "fname": data.data["unlabeled_files"][idx],
             "origin_width": 0,
             "origin_height": 0,
             "instances_number": 0,
@@ -191,14 +187,18 @@ def metadata_dict(idx: int, data: PreprocessResponse) -> Dict[str, Union[float, 
             "image_std": float(img.std()),
             "image_min": float(img.min()),
             "image_max": float(img.max()),
-            "number_of_persons": 0,
+            # "number_of_persons": 0,
+            'veh_pose': -1,
+            'veh_type': -1,
+            'plate_state': 'null',
+            'plate_number': 'null'
         }
         return metadatas
 
     bbs = get_bbs(idx, data)
     metadatas = {
         "idx": idx,
-        "fname": get_fname(idx, data),
+        "fname": str(get_fname(idx, data)),
         "origin_width": get_original_width(idx, data),
         "origin_height": get_original_height(idx, data),
         "instances_number": get_instances_num(bbs),
@@ -211,10 +211,40 @@ def metadata_dict(idx: int, data: PreprocessResponse) -> Dict[str, Union[float, 
         "image_std": float(img.std()),
         "image_min": float(img.min()),
         "image_max": float(img.max()),
-        "number_of_persons": count_persons(bbs),
-        # "count_total_obj_bbox_occlusions": get_obj_bbox_occlusions_count(img, bbs),
-        # "avg_obj_bbox_occlusions": get_obj_bbox_occlusions_avg(img, bbs),
+        # "number_of_persons": count_persons(bbs),
     }
+
+    # add extra annotations as metadata
+    anns = get_annotation_coco(idx, data.data)
+
+    if len(anns) == 1:
+        anns = anns[0]
+        if anns['veh_pose'] is not None:  # assuming coco loads `null` values as None
+            veh_pose = int(anns['veh_pose'])
+        else:
+            veh_pose = -1
+        if anns['veh_type'] is not None:
+            veh_type = int(anns['veh_type'])
+        else:
+            veh_type = -1
+        if anns['plate_state'] is not None:
+            plate_state = str(anns['plate_state'])
+        else:
+            plate_state = 'null'
+        if anns['plate_number'] is not None:
+            plate_number = str(anns['plate_number'])
+        else:
+            plate_number = 'null'
+        metadatas['veh_pose'] = veh_pose
+        metadatas['veh_type'] = veh_type
+        metadatas['plate_state'] = plate_state
+        metadatas['plate_number'] = plate_number
+    else:
+        metadatas['veh_pose'] = -1
+        metadatas['veh_type'] = -1
+        metadatas['plate_state'] = 'null'
+        metadatas['plate_number'] = 'null'
+
     return metadatas
 
 
@@ -228,7 +258,11 @@ leap_binder.set_input(input_image, 'images')
 leap_binder.set_ground_truth(get_bbs, 'bbs')
 # set prediction (object)
 leap_binder.add_prediction(name='predictions',
-                           labels=["xc", "yc", "w", "h"] + ["obj"] + list(CONFIG['class_id_to_name'].values()),
+                           labels=["xc", "yc", "w", "h"] +  # bounding box coords
+                                  ["obj"] +  # object confidence
+                                  list(CONFIG['class_id_to_name'].values()) +  # classes confidence
+                                  ['0', 'Front', 'Back'] +  # orientation
+                                  [str(i) for i in range(8)],
                            channel_dim=1)
 # set custom loss
 leap_binder.add_custom_loss(placeholder_loss, 'zero_loss')

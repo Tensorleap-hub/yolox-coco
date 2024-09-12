@@ -13,7 +13,7 @@ from yolox.utils.yolox_loss import custom_yolox_loss
 def check_integration():
     model_path = 'model/yolox_s.h5'
     model = tf.keras.models.load_model(model_path)
-    batch = 4
+    batch = 42
     responses = subset_images()  # get dataset splits
     training_response = responses[1]
     unlabeled_response = unlabeled_preprocessing_func()
@@ -33,6 +33,8 @@ def check_integration():
 
     input_img_tf = tf.convert_to_tensor(images, dtype=tf.float32)
     y_pred = model([input_img_tf])  # infer and get model prediction
+    dummy_y = tf.random.uniform((batch, 11, y_pred.shape[-1]), 0, 1)
+    y_pred = tf.concat([y_pred, dummy_y], 1)
     loss = custom_yolox_loss(y_true_bbs, y_pred)
     od_metrics = od_metrics_dict(y_true_bbs, y_pred)
 

@@ -21,7 +21,7 @@ def load_od_config() -> Dict[str, Any]:
     except Exception as e:
         print(e)
 
-    coco = COCO(os.path.join(str(Path(config['dataset_path']).absolute()), config['train_file']))
+    coco = COCO(os.path.join(str(Path(config['annotation_files_dir']).absolute()), config['train_file']))
     config['labels_original_to_consecutive'] = {original_label: consecutive_label
                                                 for
                                                 consecutive_label, original_label in
@@ -34,5 +34,6 @@ def load_od_config() -> Dict[str, Any]:
 
 CONFIG = load_od_config()
 
-dataset_path = str(Path(CONFIG['dataset_path']).absolute())
+root_dataset_path = str(Path(CONFIG['root_dataset_path']).absolute())
+annotation_files_dir = str(Path(CONFIG['annotation_files_dir']).absolute())
 unlabeled_dataset_path = str(Path(CONFIG['unlabeled_dataset_path']).absolute())

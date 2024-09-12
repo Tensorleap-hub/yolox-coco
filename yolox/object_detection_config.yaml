@@ -1,17 +1,27 @@
-dataset_path: /Users/ranhomri/tensorleap/data/coco-2017
-unlabeled_dataset_path: /Users/ranhomri/tensorleap/data/coco-2017/unlabeled/
-train_file: train.json
-val_file: val.json
+root_dataset_path: /data/training_datasets/detection/images
+annotation_files_dir: /data/training_datasets/detection/annotations/2023-04-19
+unlabeled_dataset_path: /data/training_datasets/detection/unlabeled_data
+train_file: subset_train_2_det_coco_2023-04-19.json
+val_file: val_2_det_coco_2023-04-19.json
 
-TRAIN_SIZE: 8
+TRAIN_SIZE: 16
 VAL_SIZE: 8
 UNLABELED_SIZE: 8
 
+gt_xy_center: False
+predict_log_wh: True
+
+CLASSES: 3
+POSE_CLS: 3
+TYPE_CLS: 8
+
+GT_CLS_IDX: 4
+GT_POSE_IDX: 5
+GT_TYPE_IDX: 6
+
 IOU_TH: 0.3
-BACKGROUND_LABEL: 81
-CLASSES: 80
-CONF_THRESH: 0.35
-TOP_K: 100
+CONF_THRESH: 0.5
+TOP_K: 10
 IMAGE_SIZE: [640, 640]
 LOAD_UNION_CATEGORIES_IMAGES: true
 MAX_BB_PER_IMAGE: 20
